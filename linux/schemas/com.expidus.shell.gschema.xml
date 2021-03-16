@@ -1,0 +1,18 @@
+<schemalist>
+  <schema path="/com/expidus/shell/" id="com.expidus.shell">
+    <key name="wallpaper-options" enum="org.gnome.desktop.GDesktopBackgroundStyle">
+      <default>'zoom'</default>
+      <summary>Picture Options</summary>
+      <description>
+        Determines how the wallpaper should be drawn on the desktop.
+      </description>
+    </key>
+    <key name="wallpaper-uri" type="s">
+      <default>'file:///usr/share/backgrounds/expidus/default.png'</default>
+      <summary>Picture URI</summary>
+      <description>
+        The URI to use when looking for wallpaper.
+      </description>
+    </key>
+  </schema>
+</schemalist>
