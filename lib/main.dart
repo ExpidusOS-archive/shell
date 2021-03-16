@@ -18,17 +18,33 @@ class PanelAppState extends State<PanelApp> {
         title: 'ExpidusOS Shell - Panel',
         theme: tokyoThemeDark,
         home: Scaffold(
-          appBar: AppBar(
-              title: TextButton(
-                  style: ButtonStyle(
-                      backgroundColor: MaterialStateProperty.all(
-                          tokyoThemeDark.appBarTheme.backgroundColor),
-                      foregroundColor: MaterialStateProperty.all(
-                          tokyoThemeDark.appBarTheme.foregroundColor)),
-                  onPressed: () {
-                    // TODO: open the dashboard or application's menu
-                  },
-                  child: const Text('ExpidusOS'))),
+          appBar: PreferredSize(
+              preferredSize: Size.fromHeight(30.0),
+              child: AppBar(
+                  title: TextButton(
+                      style: ButtonStyle(
+                          textStyle: MaterialStateProperty.all(
+                              tokyoThemeDark.appBarTheme.textTheme.headline5),
+                          backgroundColor: MaterialStateProperty.all(
+                              tokyoThemeDark.appBarTheme.backgroundColor),
+                          foregroundColor: MaterialStateProperty.all(
+                              tokyoThemeDark.appBarTheme.foregroundColor)),
+                      onPressed: () {
+                        // TODO: open the dashboard or application's menu
+                      },
+                      child: const Text('ExpidusOS')),
+                  actions: [
+                    TextButton(
+                        style: ButtonStyle(
+                            textStyle: MaterialStateProperty.all(
+                                tokyoThemeDark.appBarTheme.textTheme.headline5),
+                            backgroundColor: MaterialStateProperty.all(
+                                tokyoThemeDark.appBarTheme.backgroundColor),
+                            foregroundColor: MaterialStateProperty.all(
+                                tokyoThemeDark.appBarTheme.foregroundColor)),
+                        onPressed: () {},
+                        child: const Text('00:00 AM'))
+                  ])),
           body: SizedBox.expand(),
         ));
   }
