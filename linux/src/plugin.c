@@ -117,7 +117,7 @@ static void on_monitors_changed(MetaMonitorManager* mmngr, MetaPlugin* plugin) {
     int height;
     gtk_window_get_size(desktop_win, &width, &height);
 
-    strut->rect = meta_rect(rect.x, rect.y, width, 55);
+    strut->rect = meta_rect(rect.x, rect.y, width, 30);
     struts = g_slist_append(struts, strut);
 
     priv->desktops = g_slist_append(priv->desktops, desktop);
