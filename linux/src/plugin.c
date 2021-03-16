@@ -107,7 +107,6 @@ static void on_monitors_changed(MetaMonitorManager* mmngr, MetaPlugin* plugin) {
     gtk_window_set_default_size(desktop_win, rect.width, rect.height);
     gtk_window_set_resizable(desktop_win, FALSE);
     gtk_widget_set_size_request(GTK_WIDGET(desktop_win), rect.width, rect.height);
-    //gtk_window_set_keep_below(desktop_win, TRUE);
     gtk_widget_show_all(GTK_WIDGET(desktop));
 
     MetaStrut* strut = g_slice_new0(MetaStrut);

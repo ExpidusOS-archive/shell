@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:desktop_window/desktop_window.dart';
+import 'package:shell/theme.dart';
 
 void main() {
   runApp(PanelApp());
@@ -15,27 +16,19 @@ class PanelAppState extends State<PanelApp> {
   Widget build(BuildContext context) {
     return MaterialApp(
         title: 'ExpidusOS Shell - Panel',
-        theme: ThemeData(
-            primaryColor: Color.fromARGB(0xff, 0x1a, 0x1b, 0x26),
-            backgroundColor: Color.fromARGB(0xff, 0x1a, 0x1b, 0x26),
-            scaffoldBackgroundColor: Color.fromARGB(0xff, 0x1a, 0x1b, 0x26),
-            colorScheme: ColorScheme.fromSwatch(
-                primaryColorDark: Color.fromARGB(0xff, 0x1a, 0x1b, 0x26)),
-            textTheme: TextTheme(
-                headline1:
-                    TextStyle(color: Color.fromARGB(0xff, 0xa9, 0xb1, 0xd6)),
-                headline2:
-                    TextStyle(color: Color.fromARGB(0xff, 0xa9, 0xb1, 0xd6)),
-                headline3:
-                    TextStyle(color: Color.fromARGB(0xff, 0xa9, 0xb1, 0xd6)),
-                headline4:
-                    TextStyle(color: Color.fromARGB(0xff, 0xa9, 0xb1, 0xd6)),
-                headline5:
-                    TextStyle(color: Color.fromARGB(0xff, 0xa9, 0xb1, 0xd6)),
-                headline6:
-                    TextStyle(color: Color.fromARGB(0xff, 0xa9, 0xb1, 0xd6)))),
+        theme: tokyoThemeDark,
         home: Scaffold(
-          appBar: AppBar(title: const Text('ExpidusOS')),
+          appBar: AppBar(
+              title: TextButton(
+                  style: ButtonStyle(
+                      backgroundColor: MaterialStateProperty.all(
+                          tokyoThemeDark.appBarTheme.backgroundColor),
+                      foregroundColor: MaterialStateProperty.all(
+                          tokyoThemeDark.appBarTheme.foregroundColor)),
+                  onPressed: () {
+                    // TODO: open the dashboard or application's menu
+                  },
+                  child: const Text('ExpidusOS'))),
           body: SizedBox.expand(),
         ));
   }
