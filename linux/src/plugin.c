@@ -1,9 +1,11 @@
+#include <expidus-shell/panel.h>
 #include <expidus-shell/plugin.h>
 #include <meta/meta-background.h>
 #include <meta/meta-background-actor.h>
 #include <meta/meta-background-content.h>
 #include <meta/meta-background-group.h>
 #include <meta/meta-monitor-manager.h>
+#include <meta/meta-workspace-manager.h>
 
 #define ACTOR_DATA_KEY "ExpidusOSSHell-Default-actor-data"
 
@@ -12,6 +14,7 @@
 typedef struct {
   ClutterActor* bg_group;
   GSettings* settings;
+  GSList* panels;
 } ExpidusShellPluginPrivate;
 G_DEFINE_TYPE_WITH_PRIVATE(ExpidusShellPlugin, expidus_shell_plugin, META_TYPE_PLUGIN);
 
@@ -29,6 +32,11 @@ typedef struct {
 } ActorPrivate;
 
 static GQuark actor_data_quark = 0;
+
+static void destroy_panel(gpointer data) {
+  // FIXME: Issues when data is null
+  //g_clear_object(&data);
+}
 
 static void free_actor_private(gpointer data) {
   if (G_LIKELY(data != NULL)) g_slice_free(ActorPrivate, data);
@@ -69,7 +77,9 @@ static void on_monitors_changed(MetaMonitorManager* mmngr, MetaPlugin* plugin) {
 
   MetaDisplay* disp = meta_plugin_get_display(plugin);
   clutter_actor_destroy_all_children(priv->bg_group);
+  g_clear_slist(&priv->panels, destroy_panel);
 
+  GSList* struts = NULL;
   for (int i = 0; i < meta_display_get_n_monitors(disp); i++) {
     MetaRectangle rect;
     meta_display_get_monitor_geometry(disp, i, &rect);
@@ -93,6 +103,33 @@ static void on_monitors_changed(MetaMonitorManager* mmngr, MetaPlugin* plugin) {
     g_object_unref(bg);
 
     clutter_actor_add_child(priv->bg_group, bg_actor);
+
+    ExpidusShellPanel* panel = g_object_new(EXPIDUS_SHELL_TYPE_PANEL, NULL);
+    GtkWindow* panel_win = GTK_WINDOW(panel);
+    gtk_window_set_default_size(panel_win, rect.width, 1);
+    gtk_window_resize(panel_win, rect.width, 1);
+    gtk_window_move(panel_win, rect.x, rect.y);
+    gtk_window_set_resizable(panel_win, FALSE);
+    gtk_widget_show_all(GTK_WIDGET(panel));
+
+    MetaStrut* strut = g_slice_new0(MetaStrut);
+    g_assert(strut);
+    strut->side = META_SIDE_TOP;
+
+    int width;
+    int height;
+    gtk_window_get_size(panel_win, &width, &height);
+
+    strut->rect = meta_rect(rect.x, rect.y, width, height);
+    struts = g_slist_append(struts, strut);
+
+    priv->panels = g_slist_append(priv->panels, panel);
+  }
+
+  MetaWorkspaceManager* wsmngr = meta_display_get_workspace_manager(disp);
+  for (int i = 0; i < meta_workspace_manager_get_n_workspaces(wsmngr); i++) {
+    MetaWorkspace* ws = meta_workspace_manager_get_workspace_by_index(wsmngr, i);
+    meta_workspace_set_builtin_struts(ws, struts);
   }
 }
 
@@ -106,6 +143,7 @@ static void expidus_shell_plugin_start(MetaPlugin* plugin) {
   priv->bg_group = meta_background_group_new();
   clutter_actor_insert_child_below(meta_get_window_group_for_display(disp), priv->bg_group, NULL);
 
+  g_signal_connect(mmngr, "monitors-changed", G_CALLBACK(on_monitors_changed), plugin);
   on_monitors_changed(mmngr, plugin);
 
   clutter_actor_show(meta_get_stage_for_display(disp));
@@ -150,6 +188,7 @@ static void expidus_shell_plugin_constructed(GObject* obj) {
   ExpidusShellPlugin* self = EXPIDUS_SHELL_PLUGIN(obj);
   ExpidusShellPluginPrivate* priv = expidus_shell_plugin_get_instance_private(self);
 
+  priv->panels = NULL;
   priv->settings = g_settings_new("com.expidus.shell");
 }
 
@@ -162,6 +201,7 @@ static void expidus_shell_plugin_finalize(GObject* obj) {
   ExpidusShellPluginPrivate* priv = expidus_shell_plugin_get_instance_private(self);
 
   g_clear_object(&priv->settings);
+  g_clear_slist(&priv->panels, destroy_panel);
 
   G_OBJECT_CLASS(expidus_shell_plugin_parent_class)->finalize(obj);
 }
