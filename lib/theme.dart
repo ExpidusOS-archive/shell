@@ -15,12 +15,17 @@ final _TEXT_THEME_DARK = TextTheme(
     headline3: _TEXT_STYLE_H3_DARK,
     headline4: _TEXT_STYLE_H4_DARK,
     headline5: _TEXT_STYLE_H5_DARK,
-    headline6: _TEXT_STYLE_H6_DARK);
+    headline6: _TEXT_STYLE_H6_DARK,
+    subtitle1: TextStyle(color: _TEXT_COLOR_DARK, fontSize: 10),
+    subtitle2: TextStyle(color: _TEXT_COLOR_DARK, fontSize: 5),
+    bodyText1: TextStyle(color: _TEXT_COLOR_DARK, fontSize: 15),
+    bodyText2: TextStyle(color: _TEXT_COLOR_DARK, fontSize: 10));
 
 final tokyoThemeDark = ThemeData(
     primaryColorDark: Color.fromARGB(0xff, 0x1a, 0x1b, 0x26),
     scaffoldBackgroundColor: Color.fromARGB(0xff, 0x16, 0x16, 0x1e),
     shadowColor: Color.fromARGB(0x00, 0xff, 0xff, 0xff),
+    canvasColor: Color.fromARGB(0xff, 0x1a, 0x1b, 0x26),
     textTheme: _TEXT_THEME_DARK,
     appBarTheme: AppBarTheme(
         textTheme: _TEXT_THEME_DARK,

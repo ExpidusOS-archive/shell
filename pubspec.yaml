@@ -23,6 +23,7 @@ environment:
 dependencies:
   intl: ^0.17.0
   dbus: ^0.2.5
+  posix: ^2.0.0
   flutter:
     sdk: flutter
 

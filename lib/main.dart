@@ -2,17 +2,19 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:shell/theme.dart';
 import 'package:intl/intl.dart';
+import 'package:shell/widgets/minidash.dart';
+import 'package:shell/widgets/quickswitch.dart';
 
 void main() {
-  runApp(PanelApp());
+  runApp(DesktopApp());
 }
 
-class PanelApp extends StatefulWidget {
+class DesktopApp extends StatefulWidget {
   @override
   PanelAppState createState() => PanelAppState();
 }
 
-class PanelAppState extends State<PanelApp> {
+class PanelAppState extends State<DesktopApp> {
   String _timeString;
   @override
   void initState() {
@@ -31,12 +33,15 @@ class PanelAppState extends State<PanelApp> {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-        title: 'ExpidusOS Shell - Panel',
+        title: 'ExpidusOS Shell',
         theme: tokyoThemeDark,
         home: Scaffold(
+          drawer: QuickSwitch(),
+          endDrawer: Minidash(),
           appBar: PreferredSize(
               preferredSize: Size.fromHeight(30.0),
               child: AppBar(
+                  automaticallyImplyLeading: false,
                   title: TextButton(
                       style: ButtonStyle(
                           textStyle: MaterialStateProperty.all(
