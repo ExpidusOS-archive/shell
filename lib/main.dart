@@ -1,6 +1,7 @@
+import 'dart:async';
 import 'package:flutter/material.dart';
-import 'package:desktop_window/desktop_window.dart';
 import 'package:shell/theme.dart';
+import 'package:intl/intl.dart';
 
 void main() {
   runApp(PanelApp());
@@ -12,6 +13,21 @@ class PanelApp extends StatefulWidget {
 }
 
 class PanelAppState extends State<PanelApp> {
+  String _timeString;
+  @override
+  void initState() {
+    super.initState();
+    Timer.periodic(Duration(seconds: 1), (Timer t) => _getTime());
+  }
+
+  void _getTime() {
+    // TODO: add settings for seconds on clock (use jms)
+    final time = DateFormat('jm').format(DateTime.now()).toString();
+    setState(() {
+      _timeString = time;
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
@@ -42,8 +58,10 @@ class PanelAppState extends State<PanelApp> {
                                 tokyoThemeDark.appBarTheme.backgroundColor),
                             foregroundColor: MaterialStateProperty.all(
                                 tokyoThemeDark.appBarTheme.foregroundColor)),
-                        onPressed: () {},
-                        child: const Text('00:00 AM'))
+                        onPressed: () {
+                          // TODO: add menu for calendar, right click for settings
+                        },
+                        child: Text(_timeString.toString()))
                   ])),
           body: SizedBox.expand(),
         ));
