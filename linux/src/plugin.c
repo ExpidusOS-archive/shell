@@ -38,6 +38,14 @@ static void destroy_desktop(gpointer data) {
   //g_clear_object(&data);
 }
 
+static gpointer copy_struts(gconstpointer src, gpointer data) {
+  return g_slice_dup(MetaStrut, src);
+}
+
+static void strut_free(gpointer data) {
+  g_slice_free(MetaStrut, data);
+}
+
 static void free_actor_private(gpointer data) {
   if (G_LIKELY(data != NULL)) g_slice_free(ActorPrivate, data);
 }
@@ -101,12 +109,8 @@ static void on_monitors_changed(MetaMonitorManager* mmngr, MetaPlugin* plugin) {
 
     clutter_actor_add_child(priv->bg_group, bg_actor);
 
-    ExpidusShellDesktop* desktop = g_object_new(EXPIDUS_SHELL_TYPE_DESKTOP, NULL);
+    ExpidusShellDesktop* desktop = g_object_new(EXPIDUS_SHELL_TYPE_DESKTOP, "plugin", self, "monitor-index", i, NULL);
     GtkWindow* desktop_win = GTK_WINDOW(desktop);
-    gtk_window_move(desktop_win, rect.x, rect.y);
-    gtk_window_set_default_size(desktop_win, rect.width, rect.height);
-    gtk_window_set_resizable(desktop_win, FALSE);
-    gtk_widget_set_size_request(GTK_WIDGET(desktop_win), rect.width, rect.height);
     gtk_widget_show_all(GTK_WIDGET(desktop));
 
     MetaStrut* strut = g_slice_new0(MetaStrut);
@@ -123,11 +127,8 @@ static void on_monitors_changed(MetaMonitorManager* mmngr, MetaPlugin* plugin) {
     priv->desktops = g_slist_append(priv->desktops, desktop);
   }
 
-  MetaWorkspaceManager* wsmngr = meta_display_get_workspace_manager(disp);
-  for (int i = 0; i < meta_workspace_manager_get_n_workspaces(wsmngr); i++) {
-    MetaWorkspace* ws = meta_workspace_manager_get_workspace_by_index(wsmngr, i);
-    meta_workspace_set_builtin_struts(ws, struts);
-  }
+  expidus_shell_plugin_update_struts(self, struts);
+  g_clear_slist(&struts, strut_free);
 }
 
 static void expidus_shell_plugin_start(MetaPlugin* plugin) {
@@ -216,3 +217,19 @@ static void expidus_shell_plugin_class_init(ExpidusShellPluginClass* klass) {
 }
 
 static void expidus_shell_plugin_init(ExpidusShellPlugin* self) {}
+
+void expidus_shell_plugin_update_struts(ExpidusShellPlugin* self, GSList* struts) {
+  ExpidusShellPluginPrivate* priv = expidus_shell_plugin_get_instance_private(self);
+
+  for (GSList* desktop_item = priv->desktops; desktop_item != NULL; desktop_item = g_slist_next(desktop_item)) {
+    GSList* desktop_struts = g_slist_copy_deep(expidus_shell_desktop_get_struts(desktop_item->data), copy_struts, NULL);
+    struts = g_slist_concat(struts, desktop_struts);
+  }
+
+  MetaDisplay* disp = meta_plugin_get_display(META_PLUGIN(self));
+  MetaWorkspaceManager* wsmngr = meta_display_get_workspace_manager(disp);
+  for (int i = 0; i < meta_workspace_manager_get_n_workspaces(wsmngr); i++) {
+    MetaWorkspace* ws = meta_workspace_manager_get_workspace_by_index(wsmngr, i);
+    meta_workspace_set_builtin_struts(ws, struts);
+  }
+}

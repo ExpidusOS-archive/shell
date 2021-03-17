@@ -12,4 +12,6 @@ struct _ExpidusShellPlugin {
   MetaPlugin parent_instance;
 };
 
+void expidus_shell_plugin_update_struts(ExpidusShellPlugin* self, GSList* struts);
+
 G_END_DECLS

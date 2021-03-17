@@ -12,4 +12,6 @@ struct _ExpidusShellDesktop {
   GtkWindow parent_instance;
 };
 
+GSList* expidus_shell_desktop_get_struts(ExpidusShellDesktop* self);
+
 G_END_DECLS
