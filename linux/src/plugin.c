@@ -146,6 +146,10 @@ static void expidus_shell_plugin_start(MetaPlugin* plugin) {
   on_monitors_changed(mmngr, plugin);
 
   clutter_actor_show(meta_get_stage_for_display(disp));
+
+  GtkCssProvider* css_provider = gtk_css_provider_new();
+  gtk_css_provider_load_from_resource(css_provider, "/com/expidus/shell/style.css");
+  gtk_style_context_add_provider_for_screen(gdk_screen_get_default(), GTK_STYLE_PROVIDER(css_provider), GTK_STYLE_PROVIDER_PRIORITY_APPLICATION);
 }
 
 static void on_map_effect_complete(ClutterTimeline* timeline, EffectCompleteData* data) {

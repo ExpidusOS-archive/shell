@@ -8,6 +8,8 @@ class OverlayUI extends StatefulWidget {
 class _OverlayUIState extends State<OverlayUI> {
   @override
   Widget build(BuildContext context) {
-    return Scaffold();
+    return Scaffold(
+        backgroundColor:
+            Theme.of(context).scaffoldBackgroundColor.withAlpha(125));
   }
 }

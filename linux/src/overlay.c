@@ -1,5 +1,4 @@
 #include <expidus-shell/desktop.h>
-#include <expidus-shell/flutter.h>
 #include <expidus-shell/overlay.h>
 #include <expidus-shell/plugin.h>
 #include <meta/boxes.h>
@@ -7,8 +6,6 @@
 #include <meta/meta-monitor-manager.h>
 
 typedef struct {
-  FlDartProject* proj;
-  FlView* view;
   GSList* struts;
   ExpidusShellPlugin* plugin;
   int monitor_index;
@@ -48,11 +45,11 @@ static void expidus_shell_overlay_screen_changed(GtkWidget* widget, GdkScreen* o
 }
 
 static gboolean expidus_shell_overlay_draw(GtkWidget* widget, cairo_t* cr, gpointer data) {
-  ExpidusShellOverlay* self = EXPIDUS_SHELL_OVERLAY(widget);
+  ExpidusShellOverlay* self = EXPIDUS_SHELL_OVERLAY(data);
   ExpidusShellOverlayPrivate* priv = expidus_shell_overlay_get_instance_private(self);
 
   g_assert(priv->alpha_supported);
-  cairo_set_source_rgba(cr, 0.0, 0.0, 0.0, 0.0);
+  cairo_set_source_rgba(cr, 1.0, 1.0, 1.0, 0.0);
   cairo_set_operator(cr, CAIRO_OPERATOR_SOURCE);
   cairo_paint(cr);
   cairo_set_operator(cr, CAIRO_OPERATOR_OVER);
@@ -110,7 +107,7 @@ static void expidus_shell_overlay_constructed(GObject* obj) {
   gtk_window_set_keep_above(win, TRUE);
 
   g_signal_connect(win, "screen-changed", G_CALLBACK(expidus_shell_overlay_screen_changed), NULL);
-  g_signal_connect(win, "draw", G_CALLBACK(expidus_shell_overlay_draw), NULL);
+  g_signal_connect(win, "draw", G_CALLBACK(expidus_shell_overlay_draw), self);
 
   MetaDisplay* disp = meta_plugin_get_display(META_PLUGIN(priv->plugin));
   MetaRectangle rect;
@@ -120,26 +117,15 @@ static void expidus_shell_overlay_constructed(GObject* obj) {
   gtk_window_set_resizable(win, FALSE);
   gtk_widget_set_size_request(GTK_WIDGET(win), rect.width, rect.height);
 
-  priv->proj = fl_dart_project_new();
-  char* argv[] = { g_strdup_printf("%d", priv->monitor_index), "overlay", NULL };
-  fl_dart_project_set_dart_entrypoint_arguments(priv->proj, argv);
-
-  priv->view = fl_view_new(priv->proj);
-
-  gtk_widget_show(GTK_WIDGET(priv->view));
-  gtk_container_add(GTK_CONTAINER(win), GTK_WIDGET(priv->view));
-  flutter_register_plugins(FL_PLUGIN_REGISTRY(priv->view));
-
   expidus_shell_overlay_screen_changed(GTK_WIDGET(win), NULL, NULL);
   gtk_widget_show_all(GTK_WIDGET(win));
+  gdk_window_input_shape_combine_region(gtk_widget_get_window(GTK_WIDGET(win)), cairo_region_create(), 0, 0);
 }
 
 static void expidus_shell_overlay_dispose(GObject* obj) {
   ExpidusShellOverlay* self = EXPIDUS_SHELL_OVERLAY(obj);
   ExpidusShellOverlayPrivate* priv = expidus_shell_overlay_get_instance_private(self);
 
-  g_clear_object(&priv->view);
-  g_clear_object(&priv->proj);
   g_clear_slist(&priv->struts, strut_free);
 
   G_OBJECT_CLASS(expidus_shell_overlay_parent_class)->dispose(obj);

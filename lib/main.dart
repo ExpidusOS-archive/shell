@@ -1,3 +1,5 @@
+import 'dart:ui';
+
 import 'package:flutter/material.dart';
 import 'package:shell/theme.dart';
 import 'package:shell/widgets/desktop.dart';
@@ -6,8 +8,9 @@ import 'package:shell/widgets/overlay.dart';
 void main(List<String> args) {
   if (args[1] == 'desktop')
     runApp(DesktopApp());
-  else if (args[1] == 'overlay') {
-  } else
+  else if (args[1] == 'overlay')
+    runApp(OverlayApp()); // TODO: once flutter adds transparency, use it
+  else
     throw new Exception('Invalid runtime mode: ${args[1]}');
 }
 

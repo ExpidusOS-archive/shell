@@ -40,6 +40,20 @@ pkg_check_modules(MUTTER REQUIRED IMPORTED_TARGET libmutter-7)
 add_definitions(-DAPPLICATION_ID="${APPLICATION_ID}")
 include_directories(include)
 
+find_program(GLIB_COMPILE_RESOURCES NAMES glib-compile-resources REQUIRED)
+
+add_custom_command(OUTPUT "${CMAKE_CURRENT_BINARY_DIR}/shell.gresource.c"
+  WORKING_DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}/res"
+  COMMAND ${GLIB_COMPILE_RESOURCES}
+  ARGS
+    --target="${CMAKE_CURRENT_BINARY_DIR}/shell.gresource.c"
+    --generate-source
+    "${PROJECT_SOURCE_DIR}/res/shell.gresource.xml"
+  MAIN_DEPENDENCY "${PROJECT_SOURCE_DIR}/res/shell.gresource.xml"
+  DEPENDS "${PROJECT_SOURCE_DIR}/res/style.css")
+
+add_custom_target(shell-gresource DEPENDS "${CMAKE_CURRENT_BINARY_DIR}/shell.gresource.c")
+
 # Application build
 add_executable(${BINARY_NAME}
   "src/desktop.c"
@@ -47,6 +61,7 @@ add_executable(${BINARY_NAME}
   "src/main.c"
   "src/overlay.c"
   "src/plugin.c"
+  "${CMAKE_CURRENT_BINARY_DIR}/shell.gresource.c"
   "${FLUTTER_MANAGED_DIR}/generated_plugin_registrant.cc"
 )
 apply_standard_settings(${BINARY_NAME})
