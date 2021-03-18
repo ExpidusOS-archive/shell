@@ -45,6 +45,7 @@ add_executable(${BINARY_NAME}
   "src/desktop.c"
   "src/flutter.cc"
   "src/main.c"
+  "src/overlay.c"
   "src/plugin.c"
   "${FLUTTER_MANAGED_DIR}/generated_plugin_registrant.cc"
 )

@@ -1,5 +1,6 @@
 #include <expidus-shell/desktop.h>
 #include <expidus-shell/flutter.h>
+#include <expidus-shell/overlay.h>
 #include <expidus-shell/plugin.h>
 #include <meta/boxes.h>
 #include <meta/display.h>
@@ -11,6 +12,7 @@ typedef struct {
   GSList* struts;
   ExpidusShellPlugin* plugin;
   int monitor_index;
+  ExpidusShellOverlay* overlay;
 } ExpidusShellDesktopPrivate;
 G_DEFINE_TYPE_WITH_PRIVATE(ExpidusShellDesktop, expidus_shell_desktop, GTK_TYPE_WINDOW);
 
@@ -18,6 +20,7 @@ enum {
   PROP_0,
   PROP_PLUGIN,
   PROP_MONITOR_INDEX,
+  PROP_OVERLAY,
   N_PROPS
 };
 
@@ -55,6 +58,9 @@ static void expidus_shell_desktop_get_property(GObject* obj, guint prop_id, GVal
     case PROP_MONITOR_INDEX:
       g_value_set_uint(value, priv->monitor_index);
       break;
+    case PROP_OVERLAY:
+      g_value_set_object(value, priv->overlay);
+      break;
     default:
       G_OBJECT_WARN_INVALID_PROPERTY_ID(obj, prop_id, pspec);
       break;
@@ -84,11 +90,16 @@ static void expidus_shell_desktop_constructed(GObject* obj) {
   gtk_widget_set_size_request(GTK_WIDGET(win), rect.width, rect.height);
 
   priv->proj = fl_dart_project_new();
+  char* argv[] = { g_strdup_printf("%d", priv->monitor_index), "desktop", NULL };
+  fl_dart_project_set_dart_entrypoint_arguments(priv->proj, argv);
+
   priv->view = fl_view_new(priv->proj);
 
   gtk_widget_show(GTK_WIDGET(priv->view));
   gtk_container_add(GTK_CONTAINER(win), GTK_WIDGET(priv->view));
   flutter_register_plugins(FL_PLUGIN_REGISTRY(priv->view));
+
+  priv->overlay = g_object_new(EXPIDUS_SHELL_TYPE_OVERLAY, "monitor-index", priv->monitor_index, "plugin", priv->plugin, NULL);
 }
 
 static void expidus_shell_desktop_dispose(GObject* obj) {
@@ -97,6 +108,7 @@ static void expidus_shell_desktop_dispose(GObject* obj) {
 
   g_clear_object(&priv->view);
   g_clear_object(&priv->proj);
+  g_clear_object(&priv->overlay);
   g_clear_slist(&priv->struts, strut_free);
 
   G_OBJECT_CLASS(expidus_shell_desktop_parent_class)->dispose(obj);
@@ -112,6 +124,7 @@ static void expidus_shell_desktop_class_init(ExpidusShellDesktopClass* klass) {
 
   obj_props[PROP_PLUGIN] = g_param_spec_object("plugin", "Plugin", "The Mutter Plugin (ExpidusOS Shell) instance to connect to.", EXPIDUS_SHELL_TYPE_PLUGIN, G_PARAM_CONSTRUCT_ONLY | G_PARAM_READWRITE);
   obj_props[PROP_MONITOR_INDEX] = g_param_spec_uint("monitor-index", "Monitor Index", "The monitor's index to render and use.", 0, 255, 0, G_PARAM_CONSTRUCT_ONLY | G_PARAM_READWRITE);
+  obj_props[PROP_OVERLAY] = g_param_spec_object("overlay", "Overlay", "The overlay window", EXPIDUS_SHELL_TYPE_OVERLAY, G_PARAM_READABLE);
   g_object_class_install_properties(obj_class, N_PROPS, obj_props);
 }
 

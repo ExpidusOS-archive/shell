@@ -1,4 +1,5 @@
 #include <expidus-shell/desktop.h>
+#include <expidus-shell/overlay.h>
 #include <expidus-shell/plugin.h>
 #include <meta/meta-background.h>
 #include <meta/meta-background-actor.h>
@@ -222,8 +223,14 @@ void expidus_shell_plugin_update_struts(ExpidusShellPlugin* self, GSList* struts
   ExpidusShellPluginPrivate* priv = expidus_shell_plugin_get_instance_private(self);
 
   for (GSList* desktop_item = priv->desktops; desktop_item != NULL; desktop_item = g_slist_next(desktop_item)) {
-    GSList* desktop_struts = g_slist_copy_deep(expidus_shell_desktop_get_struts(desktop_item->data), copy_struts, NULL);
+    ExpidusShellDesktop* desktop = desktop_item->data;
+    ExpidusShellOverlay* overlay;
+    g_object_get(desktop, "overlay", &overlay, NULL);
+
+    GSList* desktop_struts = g_slist_copy_deep(expidus_shell_desktop_get_struts(desktop), copy_struts, NULL);
+    GSList* overlay_struts = g_slist_copy_deep(expidus_shell_overlay_get_struts(overlay), copy_struts, NULL);
     struts = g_slist_concat(struts, desktop_struts);
+    struts = g_slist_concat(struts, overlay_struts);
   }
 
   MetaDisplay* disp = meta_plugin_get_display(META_PLUGIN(self));

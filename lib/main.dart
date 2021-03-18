@@ -1,74 +1,38 @@
-import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:shell/theme.dart';
-import 'package:intl/intl.dart';
-import 'package:shell/widgets/minidash.dart';
-import 'package:shell/widgets/quickswitch.dart';
+import 'package:shell/widgets/desktop.dart';
+import 'package:shell/widgets/overlay.dart';
 
-void main() {
-  runApp(DesktopApp());
+void main(List<String> args) {
+  if (args[1] == 'desktop')
+    runApp(DesktopApp());
+  else if (args[1] == 'overlay') {
+  } else
+    throw new Exception('Invalid runtime mode: ${args[1]}');
 }
 
 class DesktopApp extends StatefulWidget {
   @override
-  PanelAppState createState() => PanelAppState();
+  _DesktopAppState createState() => _DesktopAppState();
 }
 
-class PanelAppState extends State<DesktopApp> {
-  String _timeString;
-  @override
-  void initState() {
-    super.initState();
-    Timer.periodic(Duration(seconds: 1), (Timer t) => _getTime());
-  }
-
-  void _getTime() {
-    // TODO: add settings for seconds on clock (use jms)
-    final time = DateFormat('jm').format(DateTime.now()).toString();
-    setState(() {
-      _timeString = time;
-    });
-  }
-
+class _DesktopAppState extends State<DesktopApp> {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-        title: 'ExpidusOS Shell',
-        theme: tokyoThemeDark,
-        home: Scaffold(
-          drawer: QuickSwitch(),
-          endDrawer: Minidash(),
-          appBar: PreferredSize(
-              preferredSize: Size.fromHeight(30.0),
-              child: AppBar(
-                  automaticallyImplyLeading: false,
-                  title: TextButton(
-                      style: ButtonStyle(
-                          textStyle: MaterialStateProperty.all(
-                              tokyoThemeDark.appBarTheme.textTheme.headline5),
-                          backgroundColor: MaterialStateProperty.all(
-                              tokyoThemeDark.appBarTheme.backgroundColor),
-                          foregroundColor: MaterialStateProperty.all(
-                              tokyoThemeDark.appBarTheme.foregroundColor)),
-                      onPressed: () {
-                        // TODO: open the dashboard or application's menu
-                      },
-                      child: const Text('ExpidusOS')),
-                  actions: [
-                    TextButton(
-                        style: ButtonStyle(
-                            textStyle: MaterialStateProperty.all(
-                                tokyoThemeDark.appBarTheme.textTheme.headline5),
-                            backgroundColor: MaterialStateProperty.all(
-                                tokyoThemeDark.appBarTheme.backgroundColor),
-                            foregroundColor: MaterialStateProperty.all(
-                                tokyoThemeDark.appBarTheme.foregroundColor)),
-                        onPressed: () {
-                          // TODO: add menu for calendar, right click for settings
-                        },
-                        child: Text(_timeString.toString()))
-                  ])),
-          body: SizedBox.expand(),
-        ));
+        title: 'ExpidusOS Shell', theme: tokyoThemeDark, home: DesktopUI());
+  }
+}
+
+class OverlayApp extends StatefulWidget {
+  @override
+  _OverlayAppState createState() => _OverlayAppState();
+}
+
+class _OverlayAppState extends State<OverlayApp> {
+  @override
+  Widget build(BuildContext context) {
+    return MaterialApp(
+        title: 'ExpidusOS Shell', theme: tokyoThemeDark, home: OverlayUI());
   }
 }
