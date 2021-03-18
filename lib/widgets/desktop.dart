@@ -1,8 +1,6 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
-import 'package:shell/widgets/minidash.dart';
-import 'package:shell/widgets/quickswitch.dart';
 
 class DesktopUI extends StatefulWidget {
   @override
@@ -28,8 +26,6 @@ class _DesktopUIState extends State<DesktopUI> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      drawer: QuickSwitch(),
-      endDrawer: Minidash(),
       appBar: PreferredSize(
           preferredSize: Size.fromHeight(30.0),
           child: AppBar(

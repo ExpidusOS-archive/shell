@@ -74,7 +74,7 @@ static void expidus_shell_desktop_constructed(GObject* obj) {
   ExpidusShellDesktopPrivate* priv = expidus_shell_desktop_get_instance_private(self);
 
   GtkWindow* win = GTK_WINDOW(self);
-
+  gtk_window_set_role(win, "expidus-shell-desktop");
   gtk_window_set_decorated(win, FALSE);
   gtk_window_set_type_hint(win, GDK_WINDOW_TYPE_HINT_DESKTOP);
   gtk_window_set_skip_taskbar_hint(win, TRUE);

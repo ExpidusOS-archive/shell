@@ -26,6 +26,8 @@ final tokyoThemeDark = ThemeData(
     scaffoldBackgroundColor: Color.fromARGB(0xff, 0x16, 0x16, 0x1e),
     shadowColor: Color.fromARGB(0x00, 0xff, 0xff, 0xff),
     canvasColor: Color.fromARGB(0xff, 0x1a, 0x1b, 0x26),
+    dividerColor: Color.fromARGB(0xff, 0x10, 0x10, 0x14),
+    iconTheme: IconThemeData(color: _TEXT_COLOR_DARK),
     textTheme: _TEXT_THEME_DARK,
     appBarTheme: AppBarTheme(
         textTheme: _TEXT_THEME_DARK,

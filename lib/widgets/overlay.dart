@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:shell/widgets/minidash.dart';
+import 'package:shell/widgets/quickswitch.dart';
 
 class OverlayUI extends StatefulWidget {
   @override
@@ -9,7 +11,8 @@ class _OverlayUIState extends State<OverlayUI> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-        backgroundColor:
-            Theme.of(context).scaffoldBackgroundColor.withAlpha(125));
+        backgroundColor: Colors.transparent,
+        drawer: QuickSwitch(),
+        endDrawer: Minidash());
   }
 }
