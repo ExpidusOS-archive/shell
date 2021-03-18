@@ -88,7 +88,6 @@ static void on_monitors_changed(MetaMonitorManager* mmngr, MetaPlugin* plugin) {
   clutter_actor_destroy_all_children(priv->bg_group);
   g_clear_slist(&priv->desktops, destroy_desktop);
 
-  GSList* struts = NULL;
   for (int i = 0; i < meta_display_get_n_monitors(disp); i++) {
     MetaRectangle rect;
     meta_display_get_monitor_geometry(disp, i, &rect);
@@ -111,25 +110,12 @@ static void on_monitors_changed(MetaMonitorManager* mmngr, MetaPlugin* plugin) {
     clutter_actor_add_child(priv->bg_group, bg_actor);
 
     ExpidusShellDesktop* desktop = g_object_new(EXPIDUS_SHELL_TYPE_DESKTOP, "plugin", self, "monitor-index", i, NULL);
-    GtkWindow* desktop_win = GTK_WINDOW(desktop);
     gtk_widget_show_all(GTK_WIDGET(desktop));
-
-    MetaStrut* strut = g_slice_new0(MetaStrut);
-    g_assert(strut);
-    strut->side = META_SIDE_TOP;
-
-    int width;
-    int height;
-    gtk_window_get_size(desktop_win, &width, &height);
-
-    strut->rect = meta_rect(rect.x, rect.y, width, 30);
-    struts = g_slist_append(struts, strut);
 
     priv->desktops = g_slist_append(priv->desktops, desktop);
   }
 
-  expidus_shell_plugin_update_struts(self, struts);
-  g_clear_slist(&struts, strut_free);
+  expidus_shell_plugin_update_struts(self, NULL);
 }
 
 static void expidus_shell_plugin_start(MetaPlugin* plugin) {
@@ -232,9 +218,12 @@ void expidus_shell_plugin_update_struts(ExpidusShellPlugin* self, GSList* struts
     g_object_get(desktop, "overlay", &overlay, NULL);
 
     GSList* desktop_struts = g_slist_copy_deep(expidus_shell_desktop_get_struts(desktop), copy_struts, NULL);
-    GSList* overlay_struts = g_slist_copy_deep(expidus_shell_overlay_get_struts(overlay), copy_struts, NULL);
     struts = g_slist_concat(struts, desktop_struts);
-    struts = g_slist_concat(struts, overlay_struts);
+
+    if (overlay != NULL) {
+      GSList* overlay_struts = g_slist_copy_deep(expidus_shell_overlay_get_struts(overlay), copy_struts, NULL);
+      struts = g_slist_concat(struts, overlay_struts);
+    }
   }
 
   MetaDisplay* disp = meta_plugin_get_display(META_PLUGIN(self));
@@ -243,4 +232,6 @@ void expidus_shell_plugin_update_struts(ExpidusShellPlugin* self, GSList* struts
     MetaWorkspace* ws = meta_workspace_manager_get_workspace_by_index(wsmngr, i);
     meta_workspace_set_builtin_struts(ws, struts);
   }
+
+  g_clear_slist(&struts, strut_free);
 }

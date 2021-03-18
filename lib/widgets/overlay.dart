@@ -17,16 +17,15 @@ class _OverlayUIState extends State<OverlayUI> {
         backgroundColor: Colors.transparent,
         drawer: Container(width: 80, child: QuickSwitch()),
         endDrawer: Container(width: 300, child: Minidash()),
+        body: ColoredBox(color: Colors.transparent),
         onDrawerChanged: (isOpened) {
           _overlayMessageChannel
               .invokeMethod('onDrawerChanged', isOpened)
-              .then((dynamic res) => {print('done')})
               .onError((error, stackTrace) => {print(error.toString())});
         },
         onEndDrawerChanged: (isOpened) {
           _overlayMessageChannel
               .invokeMethod('onEndDrawerChanged', isOpened)
-              .then((dynamic res) => {print('done')})
               .onError((error, stackTrace) => {print(error.toString())});
         });
   }

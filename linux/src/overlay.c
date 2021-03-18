@@ -115,6 +115,7 @@ static void expidus_shell_overlay_screen_changed(GtkWidget* widget, GdkScreen* o
   }
 
   gtk_widget_set_visual(widget, visual);
+  gtk_widget_set_visual(GTK_WIDGET(priv->view), visual);
 }
 
 static gboolean expidus_shell_overlay_draw(GtkWidget* widget, cairo_t* cr, gpointer data) {
@@ -196,6 +197,7 @@ static void expidus_shell_overlay_constructed(GObject* obj) {
 
   priv->view = fl_view_new(priv->proj);
   gtk_widget_set_app_paintable(GTK_WIDGET(priv->view), TRUE);
+  g_signal_connect(priv->view, "draw", G_CALLBACK(expidus_shell_overlay_draw), self);
 
   FlEngine* fl_engine = fl_view_get_engine(priv->view);
   FlBinaryMessenger* binmsg = fl_engine_get_binary_messenger(fl_engine);
