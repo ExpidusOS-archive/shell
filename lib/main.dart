@@ -34,9 +34,6 @@ class _OverlayAppState extends State<OverlayApp> {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-        title: 'ExpidusOS Shell',
-        color: Colors.transparent,
-        theme: tokyoThemeDark,
-        home: OverlayUI());
+        title: 'ExpidusOS Shell', theme: tokyoThemeDark, home: OverlayUI());
   }
 }

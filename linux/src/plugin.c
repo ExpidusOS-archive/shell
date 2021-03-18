@@ -43,10 +43,6 @@ static gpointer copy_struts(gconstpointer src, gpointer data) {
   return g_slice_dup(MetaStrut, src);
 }
 
-static void strut_free(gpointer data) {
-  g_slice_free(MetaStrut, data);
-}
-
 static void free_actor_private(gpointer data) {
   if (G_LIKELY(data != NULL)) g_slice_free(ActorPrivate, data);
 }
@@ -232,6 +228,4 @@ void expidus_shell_plugin_update_struts(ExpidusShellPlugin* self, GSList* struts
     MetaWorkspace* ws = meta_workspace_manager_get_workspace_by_index(wsmngr, i);
     meta_workspace_set_builtin_struts(ws, struts);
   }
-
-  g_clear_slist(&struts, strut_free);
 }

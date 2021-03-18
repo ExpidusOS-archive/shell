@@ -8,10 +8,12 @@ class QuickSwitch extends StatefulWidget {
 class _QuickSwitchState extends State<QuickSwitch> {
   @override
   Widget build(BuildContext context) {
-    return Drawer(
-        child: ListView(
-      padding: EdgeInsets.zero,
-      children: <Widget>[],
-    ));
+    return Container(
+        width: 80,
+        child: Drawer(
+            child: ListView(
+          padding: EdgeInsets.zero,
+          children: <Widget>[],
+        )));
   }
 }

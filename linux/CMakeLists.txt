@@ -37,6 +37,10 @@ find_package(PkgConfig REQUIRED)
 pkg_check_modules(GTK REQUIRED IMPORTED_TARGET gtk+-3.0)
 pkg_check_modules(MUTTER REQUIRED IMPORTED_TARGET libmutter-7)
 
+if(CMAKE_BUILD_TYPE MATCHES "Debug")
+  add_definitions(-DDEBUG)
+endif()
+
 add_definitions(-DAPPLICATION_ID="${APPLICATION_ID}")
 include_directories(include)
 

@@ -192,7 +192,11 @@ static void expidus_shell_overlay_constructed(GObject* obj) {
   gtk_widget_set_size_request(GTK_WIDGET(win), rect.width, rect.height);
 
   priv->proj = fl_dart_project_new();
-  char* argv[] = { g_strdup_printf("%d", priv->monitor_index), "overlay", NULL };
+  char* argv[] = { g_strdup_printf("%d", priv->monitor_index), "overlay",
+#ifdef DEBUG
+    "--observe",
+#endif
+    NULL };
   fl_dart_project_set_dart_entrypoint_arguments(priv->proj, argv);
 
   priv->view = fl_view_new(priv->proj);

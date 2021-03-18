@@ -30,74 +30,6 @@ static void strut_free(gpointer data) {
   g_slice_free(MetaStrut, data);
 }
 
-static void expidus_shell_desktop_overlay_handle_message(FlMethodChannel* channel, FlMethodCall* call, gpointer data) {
-  ExpidusShellDesktop* self = EXPIDUS_SHELL_DESKTOP(data);
-  ExpidusShellDesktopPrivate* priv = expidus_shell_desktop_get_instance_private(self);
-
-  GError* error = NULL;
-  g_debug("Receiving method call: %s", fl_method_call_get_name(call));
-  if (!g_strcmp0(fl_method_call_get_name(call), "onDrawerChanged")) {
-    FlValue* res = fl_method_call_get_args(call);
-    if (fl_value_get_type(res) != FL_VALUE_TYPE_BOOL) {
-      if (!fl_method_call_respond(call, FL_METHOD_RESPONSE(fl_method_error_response_new("args.invalid", "Invalid argument, expecting boolean", NULL)), &error)) {
-        g_error("Failed to respond to call: %s", error->message);
-        g_clear_error(&error);
-      }
-      return;
-    }
-    
-    MetaDisplay* disp = meta_plugin_get_display(META_PLUGIN(priv->plugin));
-    MetaRectangle rect;
-    meta_display_get_monitor_geometry(disp, priv->monitor_index, &rect);
-    if (fl_value_get_bool(res)) {
-      MetaStrut* strut = g_slice_new0(MetaStrut);
-      g_assert(strut);
-      strut->side = META_SIDE_TOP;
-      strut->rect = meta_rect(rect.x, rect.y, rect.width, rect.height);
-      expidus_shell_plugin_update_struts(priv->plugin, g_slist_append(priv->struts, strut));
-    } else {
-      expidus_shell_plugin_update_struts(priv->plugin, NULL);
-    }
-
-    if (!fl_method_call_respond(call, FL_METHOD_RESPONSE(fl_method_success_response_new(fl_value_new_null())), &error)) {
-      g_error("Failed to respond to call: %s", error->message);
-      g_clear_error(&error);
-    }
-  } else if (!g_strcmp0(fl_method_call_get_name(call), "onEndDrawerChanged")) {
-    FlValue* res = fl_method_call_get_args(call);
-    if (fl_value_get_type(res) != FL_VALUE_TYPE_BOOL) {
-      if (!fl_method_call_respond(call, FL_METHOD_RESPONSE(fl_method_error_response_new("args.invalid", "Invalid argument, expecting boolean", NULL)), &error)) {
-        g_error("Failed to respond to call: %s", error->message);
-        g_clear_error(&error);
-      }
-      return;
-    }
-    
-    MetaDisplay* disp = meta_plugin_get_display(META_PLUGIN(priv->plugin));
-    MetaRectangle rect;
-    meta_display_get_monitor_geometry(disp, priv->monitor_index, &rect);
-    if (fl_value_get_bool(res)) {
-      MetaStrut* strut = g_slice_new0(MetaStrut);
-      g_assert(strut);
-      strut->side = META_SIDE_TOP;
-      strut->rect = meta_rect(rect.x, rect.y, rect.width, rect.height);
-      expidus_shell_plugin_update_struts(priv->plugin, g_slist_append(priv->struts, strut));
-    } else {
-      expidus_shell_plugin_update_struts(priv->plugin, NULL);
-    }
-
-    if (!fl_method_call_respond(call, FL_METHOD_RESPONSE(fl_method_success_response_new(fl_value_new_null())), &error)) {
-      g_error("Failed to respond to call: %s", error->message);
-      g_clear_error(&error);
-    }
-  } else {
-    if (!fl_method_call_respond(call, FL_METHOD_RESPONSE(fl_method_not_implemented_response_new()), &error)) {
-      g_error("Failed to respond to call: %s", error->message);
-      g_clear_error(&error);
-    }
-  }
-}
-
 static void expidus_shell_desktop_set_property(GObject* obj, guint prop_id, const GValue* value, GParamSpec* pspec) {
   ExpidusShellDesktop* self = EXPIDUS_SHELL_DESKTOP(obj);
   ExpidusShellDesktopPrivate* priv = expidus_shell_desktop_get_instance_private(self);
@@ -158,15 +90,14 @@ static void expidus_shell_desktop_constructed(GObject* obj) {
   gtk_widget_set_size_request(GTK_WIDGET(win), rect.width, rect.height);
 
   priv->proj = fl_dart_project_new();
-  char* argv[] = { g_strdup_printf("%d", priv->monitor_index), "desktop", NULL };
+  char* argv[] = { g_strdup_printf("%d", priv->monitor_index), "desktop",
+#ifdef DEBUG
+    "--observe",
+#endif
+    NULL };
   fl_dart_project_set_dart_entrypoint_arguments(priv->proj, argv);
 
   priv->view = fl_view_new(priv->proj);
-
-  FlEngine* fl_engine = fl_view_get_engine(priv->view);
-  FlBinaryMessenger* binmsg = fl_engine_get_binary_messenger(fl_engine);
-  FlMethodChannel* channel = fl_method_channel_new(binmsg, "com.expidus.shell/overlay", FL_METHOD_CODEC(fl_standard_method_codec_new()));
-  fl_method_channel_set_method_call_handler(channel, expidus_shell_desktop_overlay_handle_message, self, NULL);
 
   gtk_widget_show(GTK_WIDGET(priv->view));
   gtk_container_add(GTK_CONTAINER(win), GTK_WIDGET(priv->view));
@@ -175,10 +106,10 @@ static void expidus_shell_desktop_constructed(GObject* obj) {
   MetaStrut* strut = g_slice_new0(MetaStrut);
   g_assert(strut);
   strut->side = META_SIDE_TOP;
-  strut->rect = meta_rect(rect.x, rect.y, rect.width, 50);
+  strut->rect = meta_rect(rect.x, rect.y, rect.width, 30);
   priv->struts = g_slist_append(priv->struts, strut);
 
-  //priv->overlay = g_object_new(EXPIDUS_SHELL_TYPE_OVERLAY, "monitor-index", priv->monitor_index, "plugin", priv->plugin, NULL);
+  priv->overlay = g_object_new(EXPIDUS_SHELL_TYPE_OVERLAY, "monitor-index", priv->monitor_index, "plugin", priv->plugin, NULL);
 }
 
 static void expidus_shell_desktop_dispose(GObject* obj) {
@@ -187,7 +118,7 @@ static void expidus_shell_desktop_dispose(GObject* obj) {
 
   g_clear_object(&priv->view);
   g_clear_object(&priv->proj);
-  //g_clear_object(&priv->overlay);
+  g_clear_object(&priv->overlay);
   g_clear_slist(&priv->struts, strut_free);
 
   G_OBJECT_CLASS(expidus_shell_desktop_parent_class)->dispose(obj);

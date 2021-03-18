@@ -17,82 +17,86 @@ class _MinidashState extends State<Minidash> {
 
   @override
   Widget build(BuildContext context) {
-    return Drawer(
-        child: ListView(
-      padding: EdgeInsets.zero,
-      children: <Widget>[
-        FutureBuilder<User>(
-          future: _userFuture,
-          builder: (BuildContext context, AsyncSnapshot<User> snapshot) {
-            if (snapshot.hasData) {
-              return DrawerHeader(
-                  child: Column(children: [
-                Center(
-                    child: Row(children: [
-                  IconButton(
-                      icon: const Icon(Icons.wifi),
-                      tooltip: 'Toggle WiFi',
-                      onPressed: () {
-                        Navigator.pop(context);
-                      }),
-                  IconButton(
-                      icon: const Icon(Icons.bluetooth_connected_sharp),
-                      tooltip: 'Toggle Bluetooth',
-                      onPressed: () {
-                        Navigator.pop(context);
-                      }),
-                  IconButton(
-                      icon: const Icon(Icons.location_disabled),
-                      tooltip: 'Toggle Location Services',
-                      onPressed: () {
-                        Navigator.pop(context);
-                      }),
-                  IconButton(
-                      icon: const Icon(Icons.flash_off_outlined),
-                      tooltip: 'Toogle flashlight',
-                      onPressed: () {
-                        Navigator.pop(context);
-                      }),
-                  IconButton(
-                      icon: const Icon(Icons.airplanemode_inactive),
-                      tooltip: 'Toggle Airplane mode',
-                      onPressed: () {
-                        Navigator.pop(context);
-                      }),
-                  IconButton(
-                      icon: const Icon(Icons.settings),
-                      tooltip: 'System Settings',
-                      onPressed: () {
-                        Navigator.pop(context);
-                      })
-                ])),
-                SizedBox(height: 5),
-                Divider(),
-                SizedBox(height: 5),
-                Center(
-                    child: Row(children: [
-                  snapshot.data.getFace().length > 0
-                      ? CircleAvatar(
-                          radius:
-                              Theme.of(context).textTheme.headline3.fontSize *
+    return Container(
+        width: 300,
+        child: Drawer(
+            child: ListView(
+          padding: EdgeInsets.zero,
+          children: <Widget>[
+            FutureBuilder<User>(
+              future: _userFuture,
+              builder: (BuildContext context, AsyncSnapshot<User> snapshot) {
+                if (snapshot.hasData) {
+                  return DrawerHeader(
+                      child: Column(children: [
+                    Center(
+                        child: Row(children: [
+                      IconButton(
+                          icon: const Icon(Icons.wifi),
+                          tooltip: 'Toggle WiFi',
+                          onPressed: () {
+                            Navigator.pop(context);
+                          }),
+                      IconButton(
+                          icon: const Icon(Icons.bluetooth_connected_sharp),
+                          tooltip: 'Toggle Bluetooth',
+                          onPressed: () {
+                            Navigator.pop(context);
+                          }),
+                      IconButton(
+                          icon: const Icon(Icons.location_disabled),
+                          tooltip: 'Toggle Location Services',
+                          onPressed: () {
+                            Navigator.pop(context);
+                          }),
+                      IconButton(
+                          icon: const Icon(Icons.flash_off_outlined),
+                          tooltip: 'Toogle flashlight',
+                          onPressed: () {
+                            Navigator.pop(context);
+                          }),
+                      IconButton(
+                          icon: const Icon(Icons.airplanemode_inactive),
+                          tooltip: 'Toggle Airplane mode',
+                          onPressed: () {
+                            Navigator.pop(context);
+                          }),
+                      IconButton(
+                          icon: const Icon(Icons.settings),
+                          tooltip: 'System Settings',
+                          onPressed: () {
+                            Navigator.pop(context);
+                          })
+                    ])),
+                    SizedBox(height: 5),
+                    Divider(),
+                    SizedBox(height: 5),
+                    Center(
+                        child: Row(children: [
+                      snapshot.data.getFace().length > 0
+                          ? CircleAvatar(
+                              radius: Theme.of(context)
+                                      .textTheme
+                                      .headline3
+                                      .fontSize *
                                   1.35 /
                                   2,
-                          backgroundImage:
-                              FileImage(new File(snapshot.data.getFace())))
-                      : null,
-                  snapshot.data.getFace().length > 0
-                      ? SizedBox(width: 10)
-                      : null,
-                  Text(snapshot.data.getRealName(),
-                      style: Theme.of(context).textTheme.headline3)
-                ])),
-              ]));
-            } else {
-              return CircularProgressIndicator();
-            }
-          },
-        )
-      ],
-    ));
+                              backgroundImage:
+                                  FileImage(new File(snapshot.data.getFace())))
+                          : null,
+                      snapshot.data.getFace().length > 0
+                          ? SizedBox(width: 10)
+                          : null,
+                      Text(snapshot.data.getRealName(),
+                          style: Theme.of(context).textTheme.headline3)
+                    ])),
+                  ]));
+                } else {
+                  return CircularProgressIndicator();
+                }
+              },
+            )
+          ],
+        )));
   }
 }

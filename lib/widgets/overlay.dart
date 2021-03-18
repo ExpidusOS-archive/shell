@@ -15,8 +15,8 @@ class _OverlayUIState extends State<OverlayUI> {
   Widget build(BuildContext context) {
     return Scaffold(
         backgroundColor: Colors.transparent,
-        drawer: Container(width: 80, child: QuickSwitch()),
-        endDrawer: Container(width: 300, child: Minidash()),
+        drawer: QuickSwitch(),
+        endDrawer: Minidash(),
         body: ColoredBox(color: Colors.transparent),
         onDrawerChanged: (isOpened) {
           _overlayMessageChannel
