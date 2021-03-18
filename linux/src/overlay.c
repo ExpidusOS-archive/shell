@@ -29,6 +29,76 @@ static void strut_free(gpointer data) {
   g_slice_free(MetaStrut, data);
 }
 
+static void expidus_shell_overlay_handle_message(FlMethodChannel* channel, FlMethodCall* call, gpointer data) {
+  ExpidusShellOverlay* self = EXPIDUS_SHELL_OVERLAY(data);
+  ExpidusShellOverlayPrivate* priv = expidus_shell_overlay_get_instance_private(self);
+
+  GError* error = NULL;
+  g_debug("Receiving method call: %s", fl_method_call_get_name(call));
+  if (!g_strcmp0(fl_method_call_get_name(call), "onDrawerChanged")) {
+    FlValue* res = fl_method_call_get_args(call);
+    if (fl_value_get_type(res) != FL_VALUE_TYPE_BOOL) {
+      if (!fl_method_call_respond(call, FL_METHOD_RESPONSE(fl_method_error_response_new("args.invalid", "Invalid argument, expecting boolean", NULL)), &error)) {
+        g_error("Failed to respond to call: %s", error->message);
+        g_clear_error(&error);
+      }
+      return;
+    }
+
+    MetaDisplay* disp = meta_plugin_get_display(META_PLUGIN(priv->plugin));
+    MetaRectangle rect;
+    meta_display_get_monitor_geometry(disp, priv->monitor_index, &rect);
+    cairo_rectangle_int_t crrect = {
+      .x = 0,
+      .y = 0,
+      .width = 80,
+      .height = rect.height
+    };
+
+    cairo_region_t* region = cairo_region_create_rectangle(&crrect);
+    gdk_window_input_shape_combine_region(gtk_widget_get_window(GTK_WIDGET(self)), region, 0, 0);
+    cairo_region_destroy(region);
+
+    if (!fl_method_call_respond(call, FL_METHOD_RESPONSE(fl_method_success_response_new(fl_value_new_null())), &error)) {
+      g_error("Failed to respond to call: %s", error->message);
+      g_clear_error(&error);
+    }
+  } else if (!g_strcmp0(fl_method_call_get_name(call), "onEndDrawerChanged")) {
+    FlValue* res = fl_method_call_get_args(call);
+    if (fl_value_get_type(res) != FL_VALUE_TYPE_BOOL) {
+      if (!fl_method_call_respond(call, FL_METHOD_RESPONSE(fl_method_error_response_new("args.invalid", "Invalid argument, expecting boolean", NULL)), &error)) {
+        g_error("Failed to respond to call: %s", error->message);
+        g_clear_error(&error);
+      }
+      return;
+    }
+
+    MetaDisplay* disp = meta_plugin_get_display(META_PLUGIN(priv->plugin));
+    MetaRectangle rect;
+    meta_display_get_monitor_geometry(disp, priv->monitor_index, &rect);
+    cairo_rectangle_int_t crrect = {
+      .x = rect.width - 300,
+      .y = 0,
+      .width = 300,
+      .height = rect.height
+    };
+
+    cairo_region_t* region = cairo_region_create_rectangle(&crrect);
+    gdk_window_input_shape_combine_region(gtk_widget_get_window(GTK_WIDGET(self)), region, 0, 0);
+    cairo_region_destroy(region);
+
+    if (!fl_method_call_respond(call, FL_METHOD_RESPONSE(fl_method_success_response_new(fl_value_new_null())), &error)) {
+      g_error("Failed to respond to call: %s", error->message);
+      g_clear_error(&error);
+    }
+  } else {
+    if (!fl_method_call_respond(call, FL_METHOD_RESPONSE(fl_method_not_implemented_response_new()), &error)) {
+      g_error("Failed to respond to call: %s", error->message);
+      g_clear_error(&error);
+    }
+  }
+}
+
 static void expidus_shell_overlay_screen_changed(GtkWidget* widget, GdkScreen* old, gpointer data) {
   ExpidusShellOverlay* self = EXPIDUS_SHELL_OVERLAY(widget);
   ExpidusShellOverlayPrivate* priv = expidus_shell_overlay_get_instance_private(self);
@@ -127,6 +197,11 @@ static void expidus_shell_overlay_constructed(GObject* obj) {
   priv->view = fl_view_new(priv->proj);
   gtk_widget_set_app_paintable(GTK_WIDGET(priv->view), TRUE);
 
+  FlEngine* fl_engine = fl_view_get_engine(priv->view);
+  FlBinaryMessenger* binmsg = fl_engine_get_binary_messenger(fl_engine);
+  FlMethodChannel* channel = fl_method_channel_new(binmsg, "com.expidus.shell/overlay", FL_METHOD_CODEC(fl_standard_method_codec_new()));
+  fl_method_channel_set_method_call_handler(channel, expidus_shell_overlay_handle_message, self, NULL);
+
   gtk_widget_show(GTK_WIDGET(priv->view));
   gtk_container_add(GTK_CONTAINER(win), GTK_WIDGET(priv->view));
   flutter_register_plugins(FL_PLUGIN_REGISTRY(priv->view));
@@ -134,6 +209,24 @@ static void expidus_shell_overlay_constructed(GObject* obj) {
   expidus_shell_overlay_screen_changed(GTK_WIDGET(win), NULL, NULL);
   gtk_widget_show_all(GTK_WIDGET(win));
   gdk_window_input_shape_combine_region(gtk_widget_get_window(GTK_WIDGET(win)), cairo_region_create(), 0, 0);
+
+  cairo_rectangle_int_t crrect[] = {
+    {
+      .x = 0,
+      .y = 0,
+      .width = 25,
+      .height = rect.height
+    },
+    {
+      .x = rect.width - 25,
+      .y = 0,
+      .width = 25,
+      .height = rect.height
+    }
+  };
+  cairo_region_t* region = cairo_region_create_rectangles(crrect, 2);
+  gdk_window_input_shape_combine_region(gtk_widget_get_window(GTK_WIDGET(win)), region, 0, 0);
+  cairo_region_destroy(region);
 }
 
 static void expidus_shell_overlay_dispose(GObject* obj) {

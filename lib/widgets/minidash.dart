@@ -32,27 +32,39 @@ class _MinidashState extends State<Minidash> {
                   IconButton(
                       icon: const Icon(Icons.wifi),
                       tooltip: 'Toggle WiFi',
-                      onPressed: () => {}),
+                      onPressed: () {
+                        Navigator.pop(context);
+                      }),
                   IconButton(
                       icon: const Icon(Icons.bluetooth_connected_sharp),
                       tooltip: 'Toggle Bluetooth',
-                      onPressed: () => {}),
+                      onPressed: () {
+                        Navigator.pop(context);
+                      }),
                   IconButton(
                       icon: const Icon(Icons.location_disabled),
                       tooltip: 'Toggle Location Services',
-                      onPressed: () => {}),
+                      onPressed: () {
+                        Navigator.pop(context);
+                      }),
                   IconButton(
                       icon: const Icon(Icons.flash_off_outlined),
                       tooltip: 'Toogle flashlight',
-                      onPressed: () => {}),
+                      onPressed: () {
+                        Navigator.pop(context);
+                      }),
                   IconButton(
                       icon: const Icon(Icons.airplanemode_inactive),
                       tooltip: 'Toggle Airplane mode',
-                      onPressed: () => {}),
+                      onPressed: () {
+                        Navigator.pop(context);
+                      }),
                   IconButton(
                       icon: const Icon(Icons.settings),
                       tooltip: 'System Settings',
-                      onPressed: () {})
+                      onPressed: () {
+                        Navigator.pop(context);
+                      })
                 ])),
                 SizedBox(height: 5),
                 Divider(),
