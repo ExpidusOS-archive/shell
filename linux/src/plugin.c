@@ -7,16 +7,12 @@
 #include <meta/meta-background-group.h>
 #include <meta/meta-monitor-manager.h>
 #include <meta/meta-workspace-manager.h>
+#include "plugin-private.h"
 
 #define ACTOR_DATA_KEY "ExpidusOSSHell-Default-actor-data"
 
 #define MAP_TIMEOUT 250
 
-typedef struct {
-  ClutterActor* bg_group;
-  GSettings* settings;
-  GSList* desktops;
-} ExpidusShellPluginPrivate;
 G_DEFINE_TYPE_WITH_PRIVATE(ExpidusShellPlugin, expidus_shell_plugin, META_TYPE_PLUGIN);
 
 typedef struct {
@@ -172,6 +168,7 @@ static void expidus_shell_plugin_constructed(GObject* obj) {
 
   ExpidusShellPlugin* self = EXPIDUS_SHELL_PLUGIN(obj);
   ExpidusShellPluginPrivate* priv = expidus_shell_plugin_get_instance_private(self);
+  self->priv = priv;
 
   priv->desktops = NULL;
   priv->settings = g_settings_new("com.expidus.shell");

@@ -62,6 +62,7 @@ add_custom_target(shell-gresource DEPENDS "${CMAKE_CURRENT_BINARY_DIR}/shell.gre
 add_executable(${BINARY_NAME}
   "src/desktop.c"
   "src/flutter.cc"
+  "src/global-messanger.c"
   "src/main.c"
   "src/overlay.c"
   "src/plugin.c"

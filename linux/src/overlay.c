@@ -1,5 +1,6 @@
 #include <expidus-shell/desktop.h>
 #include <expidus-shell/flutter.h>
+#include <expidus-shell/global-messanger.h>
 #include <expidus-shell/overlay.h>
 #include <expidus-shell/plugin.h>
 #include <meta/boxes.h>
@@ -207,6 +208,7 @@ static void expidus_shell_overlay_constructed(GObject* obj) {
   FlBinaryMessenger* binmsg = fl_engine_get_binary_messenger(fl_engine);
   FlMethodChannel* channel = fl_method_channel_new(binmsg, "com.expidus.shell/overlay", FL_METHOD_CODEC(fl_standard_method_codec_new()));
   fl_method_channel_set_method_call_handler(channel, expidus_shell_overlay_handle_message, self, NULL);
+  expidus_shell_messanger_init(priv->plugin, fl_engine);
 
   gtk_widget_show(GTK_WIDGET(priv->view));
   gtk_container_add(GTK_CONTAINER(win), GTK_WIDGET(priv->view));

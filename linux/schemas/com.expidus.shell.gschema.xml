@@ -14,5 +14,12 @@
         The URI to use when looking for wallpaper.
       </description>
     </key>
+    <key name="favorite-applications" type="as">
+      <default>['com.expidus.phone', 'com.expidus.contacts', 'com.expidus.settings']</default>
+      <summary>Favorite Applications</summary>
+      <description>
+        List of favorited applications, will be pinned on the quick launcher.
+      </description>
+    </key>
   </schema>
 </schemalist>

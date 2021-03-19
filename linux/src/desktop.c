@@ -1,5 +1,6 @@
 #include <expidus-shell/desktop.h>
 #include <expidus-shell/flutter.h>
+#include <expidus-shell/global-messanger.h>
 #include <expidus-shell/overlay.h>
 #include <expidus-shell/plugin.h>
 #include <meta/boxes.h>
@@ -102,6 +103,9 @@ static void expidus_shell_desktop_constructed(GObject* obj) {
   gtk_widget_show(GTK_WIDGET(priv->view));
   gtk_container_add(GTK_CONTAINER(win), GTK_WIDGET(priv->view));
   flutter_register_plugins(FL_PLUGIN_REGISTRY(priv->view));
+
+  FlEngine* fl_engine = fl_view_get_engine(priv->view);
+  expidus_shell_messanger_init(priv->plugin, fl_engine);
 
   MetaStrut* strut = g_slice_new0(MetaStrut);
   g_assert(strut);
