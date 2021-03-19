@@ -2,6 +2,7 @@ import 'dart:io';
 
 import 'package:flutter/services.dart';
 import 'package:shell/settings.dart';
+import 'package:path/path.dart' as path;
 
 enum ApplicationType { SYSTEM, USER, OTHER }
 
@@ -27,6 +28,8 @@ class Application {
 
     this._icon = values[0] as String;
     this._displayName = values[1] as String;
+
+    if (path.extension(this._icon) == '.svg') this._icon = null;
     return this;
   }
 

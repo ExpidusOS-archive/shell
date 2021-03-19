@@ -64,6 +64,34 @@ static void expidus_shell_overlay_handle_message(FlMethodChannel* channel, FlMet
       g_error("Failed to respond to call: %s", error->message);
       g_clear_error(&error);
     }
+  } else if (!g_strcmp0(fl_method_call_get_name(call), "onDashboard")) {
+    FlValue* res = fl_method_call_get_args(call);
+    if (fl_value_get_type(res) != FL_VALUE_TYPE_BOOL) {
+      if (!fl_method_call_respond(call, FL_METHOD_RESPONSE(fl_method_error_response_new("args.invalid", "Invalid argument, expecting boolean", NULL)), &error)) {
+        g_error("Failed to respond to call: %s", error->message);
+        g_clear_error(&error);
+      }
+      return;
+    }
+
+    MetaDisplay* disp = meta_plugin_get_display(META_PLUGIN(priv->plugin));
+    MetaRectangle rect;
+    meta_display_get_monitor_geometry(disp, priv->monitor_index, &rect);
+    cairo_rectangle_int_t crrect = {
+      .x = 0,
+      .y = 0,
+      .width = rect.width,
+      .height = rect.height
+    };
+
+    cairo_region_t* region = cairo_region_create_rectangle(&crrect);
+    gdk_window_input_shape_combine_region(gtk_widget_get_window(GTK_WIDGET(self)), region, 0, 0);
+    cairo_region_destroy(region);
+
+    if (!fl_method_call_respond(call, FL_METHOD_RESPONSE(fl_method_success_response_new(fl_value_new_null())), &error)) {
+      g_error("Failed to respond to call: %s", error->message);
+      g_clear_error(&error);
+    }
   } else if (!g_strcmp0(fl_method_call_get_name(call), "onEndDrawerChanged")) {
     FlValue* res = fl_method_call_get_args(call);
     if (fl_value_get_type(res) != FL_VALUE_TYPE_BOOL) {
@@ -116,7 +144,6 @@ static void expidus_shell_overlay_screen_changed(GtkWidget* widget, GdkScreen* o
   }
 
   gtk_widget_set_visual(widget, visual);
-  gtk_widget_set_visual(GTK_WIDGET(priv->view), visual);
 }
 
 static gboolean expidus_shell_overlay_draw(GtkWidget* widget, cairo_t* cr, gpointer data) {
@@ -202,7 +229,6 @@ static void expidus_shell_overlay_constructed(GObject* obj) {
 
   priv->view = fl_view_new(priv->proj);
   gtk_widget_set_app_paintable(GTK_WIDGET(priv->view), TRUE);
-  g_signal_connect(priv->view, "draw", G_CALLBACK(expidus_shell_overlay_draw), self);
 
   FlEngine* fl_engine = fl_view_get_engine(priv->view);
   FlBinaryMessenger* binmsg = fl_engine_get_binary_messenger(fl_engine);

@@ -140,8 +140,8 @@ static void applications_handler(FlMethodChannel* channel, FlMethodCall* call, g
     if (G_IS_FILE_ICON(icon)) icon_path = g_file_get_path(g_file_icon_get_file(G_FILE_ICON(icon)));
     else {
       GtkIconTheme* icon_theme = gtk_icon_theme_get_default();
-      GtkIconInfo* icon_info = gtk_icon_theme_lookup_by_gicon(icon_theme, icon, 32, GTK_ICON_LOOKUP_NO_SVG);
-      g_assert(icon_info);
+      GtkIconInfo* icon_info = gtk_icon_theme_lookup_by_gicon(icon_theme, icon, 32, 0);
+      if (icon_info == NULL) icon_info = gtk_icon_theme_lookup_by_gicon(icon_theme, icon, 16, 0);
       icon_path = (gchar*)gtk_icon_info_get_filename(icon_info);
     }
 

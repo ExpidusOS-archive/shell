@@ -1,9 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:shell/widgets/dashboard.dart';
 import 'package:shell/widgets/minidash.dart';
 import 'package:shell/widgets/quickswitch.dart';
 
 final _overlayMessageChannel = MethodChannel('com.expidus.shell/overlay');
+
+enum _OverlayUIMode { DESKTOP, LOCK, DASHBOARD }
 
 class OverlayUI extends StatefulWidget {
   @override
@@ -11,13 +14,26 @@ class OverlayUI extends StatefulWidget {
 }
 
 class _OverlayUIState extends State<OverlayUI> {
+  _OverlayUIMode _mode = _OverlayUIMode.DESKTOP;
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
         backgroundColor: Colors.transparent,
-        drawer: QuickSwitch(),
+        drawer: QuickSwitch(onDashboard: () {
+          _overlayMessageChannel
+              .invokeMethod('onDashboard', _mode == _OverlayUIMode.DASHBOARD)
+              .then((dynamic args) => setState(() {
+                    _mode = _mode == _OverlayUIMode.DASHBOARD
+                        ? _OverlayUIMode.DESKTOP
+                        : _OverlayUIMode.DASHBOARD;
+                  }))
+              .catchError((error) => print(error.toString()));
+        }),
         endDrawer: Minidash(),
-        body: ColoredBox(color: Colors.transparent),
+        body: _mode == _OverlayUIMode.DESKTOP
+            ? ColoredBox(color: Colors.transparent)
+            : Dashboard(),
         onDrawerChanged: (isOpened) {
           _overlayMessageChannel
               .invokeMethod('onDrawerChanged', isOpened)
