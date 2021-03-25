@@ -1,5 +1,8 @@
+#include <expidus-shell/desktop.h>
 #include <expidus-shell/shell.h>
+#include <meta/display.h>
 #include <meta/meta-plugin.h>
+#include <meta/meta-monitor-manager.h>
 
 typedef struct {
 	GList* desktops;
@@ -8,6 +11,8 @@ typedef struct {
 
 	GType desktop_type;
 	GType overlay_type;
+	GType lockscreen_type;
+	GType notification_type;
 } ExpidusShellPrivate;
 G_DEFINE_TYPE_WITH_PRIVATE(ExpidusShell, expidus_shell, G_TYPE_OBJECT);
 
@@ -62,6 +67,8 @@ static void expidus_shell_constructed(GObject* obj) {
 	ExpidusShellPrivate* priv = expidus_shell_get_instance_private(self);
 
 	priv->settings = g_settings_new("com.expidus.shell");
+	priv->desktop_type = EXPIDUS_SHELL_TYPE_DESKTOP;
+	priv->desktops = NULL;
 }
 
 static void expidus_shell_finalize(GObject* obj) {
@@ -93,4 +100,18 @@ GList* expidus_shell_get_desktops(ExpidusShell* self) {
 	ExpidusShellPrivate* priv = expidus_shell_get_instance_private(self);
 	g_return_val_if_fail(priv, NULL);
 	return priv->desktops;
+}
+
+void expidus_shell_sync_desktops(ExpidusShell* self) {
+	g_return_if_fail(EXPIDUS_IS_SHELL(self));
+	ExpidusShellPrivate* priv = expidus_shell_get_instance_private(self);
+	g_return_if_fail(priv);
+
+	//g_clear_list(&priv->desktops, g_object_unref);
+
+  MetaDisplay* disp = meta_plugin_get_display(priv->plugin);
+  for (int i = 0; i < meta_display_get_n_monitors(disp); i++) {
+		ExpidusShellDesktop* desktop = EXPIDUS_SHELL_DESKTOP(g_object_new(priv->desktop_type, "shell", self, "monitor-index", i, NULL));
+		priv->desktops = g_list_append(priv->desktops, desktop);
+	}
 }

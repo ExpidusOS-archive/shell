@@ -41,6 +41,8 @@ static void on_monitors_changed(MetaMonitorManager* mmngr, MetaPlugin* plugin) {
 
     clutter_actor_add_child(priv->bg_group, bg_actor);
   }
+
+  expidus_shell_sync_desktops(priv->shell);
 }
 
 static void expidus_shell_plugin_start(MetaPlugin* plugin) {

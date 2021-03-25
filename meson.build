@@ -96,13 +96,13 @@ shell_res = gnome.compile_resources('expidus-shell-resources', 'data/res/shell.g
 	c_name: 'expidus_shell')
 
 executable('expidus-shell.bin', [shell_res, 'src/desktop.c', 'src/main.c', 'src/plugin.c', 'src/shell.c'],
-	include_directories: include_directories('include'),
+	include_directories: include_directories('include', join_paths(flutter_enginedir, flutter_full_target)),
 	install: true,
 	build_rpath: mutter_rpath,
 	install_rpath: mutter_rpath,
 	install_dir: join_paths(get_option('prefix'), get_option('libexecdir'), 'expidus-shell-' + meson.project_version()),
-	link_args: ['-L' + join_paths(flutter_enginedir, flutter_full_target), '-lflutter_linux_gtk'],
-	dependencies: [gtk, gio, mutter])
+	dependencies: [gtk, gio, mutter,
+		meson.get_compiler('c').find_library('flutter_linux_gtk', dirs: join_paths(flutter_enginedir, flutter_full_target))])
 
 configure_file(input: 'data/expidus-shell.sh.in', output: 'expidus-shell',
 	install: true,
