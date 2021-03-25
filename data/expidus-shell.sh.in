@@ -1,0 +1,4 @@
+#!/usr/bin/env bash
+
+export LD_LIBRARY_PATH=@PREFIX@/@LIBDIR@/expidus-shell-@EXPIDUS_SHELL_VERSION@
+exec @PREFIX@/@LIBEXECDIR@/expidus-shell-@EXPIDUS_SHELL_VERSION@/expidus-shell.bin $@

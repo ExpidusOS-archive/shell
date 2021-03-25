@@ -2,5 +2,7 @@
   "cmake.configureOnOpen": false,
   "files.associations": {
     "typeinfo": "c"
-  }
+  },
+  "cmake.sourceDirectory": "${workspaceFolder}/linux",
+  "mesonbuild.configureOnOpen": true
 }
