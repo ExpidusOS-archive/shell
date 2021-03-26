@@ -94,6 +94,7 @@ compile_commands.json
 
 expidus-shell
 expidus-shell.bin
+!include/expidus-shell
 
 # Generated files
 *-resources.c
