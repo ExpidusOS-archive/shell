@@ -9,6 +9,7 @@ fs = import('fs')
 gtk = dependency('gtk+-3.0')
 gio = dependency('gio-2.0')
 mutter = dependency('libmutter-7')
+wnck = dependency('libwnck-3.0')
 
 # Flutter variables
 flutter_version = run_command('sh', ['-c', flutter_exe.full_path() + ' --version | head -n1 | cut -f2 -d \' \''])
@@ -43,6 +44,7 @@ custom_target('assets',
 	build_by_default: true,
 	output: 'flutter_assets',
 	input: 'lib/main.dart',
+	depend_files: ['lib/ui/desktop.dart', 'lib/main.dart'],
 	command: [flutter_exe, 'build', 'bundle',
 		'--asset-dir', join_paths(meson.current_build_dir(), 'flutter_assets'),
 		'--target-platform', flutter_target,
@@ -101,7 +103,7 @@ executable('expidus-shell.bin', [shell_res, 'src/desktop.c', 'src/main.c', 'src/
 	build_rpath: mutter_rpath,
 	install_rpath: mutter_rpath,
 	install_dir: join_paths(get_option('prefix'), get_option('libexecdir'), 'expidus-shell-' + meson.project_version()),
-	dependencies: [gtk, gio, mutter,
+	dependencies: [gtk, gio, mutter, wnck,
 		meson.get_compiler('c').find_library('flutter_linux_gtk', dirs: join_paths(flutter_enginedir, flutter_full_target))])
 
 configure_file(input: 'data/expidus-shell.sh.in', output: 'expidus-shell',
