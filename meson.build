@@ -97,7 +97,7 @@ shell_res = gnome.compile_resources('expidus-shell-resources', 'data/res/shell.g
 	source_dir: 'data/res',
 	c_name: 'expidus_shell')
 
-executable('expidus-shell.bin', [shell_res, 'src/desktop.c', 'src/main.c', 'src/plugin.c', 'src/shell.c'],
+executable('expidus-shell.bin', [shell_res, 'src/desktop.c', 'src/main.c', 'src/plugin.c', 'src/shell.c', 'src/utils.c'],
 	include_directories: include_directories('include', join_paths(flutter_enginedir, flutter_full_target)),
 	install: true,
 	build_rpath: mutter_rpath,

@@ -12,13 +12,14 @@ class _DesktopUIState extends State<DesktopUI> {
   String _titleString = 'ExpidusOS';
   dynamic _titleIcon = Icons.apps;
   bool _isApp = false;
-  final _desktopChannel = MethodChannel('com.expidus.shell/desktop.dart');
+  final _dartChannel = MethodChannel('com.expidus.shell/desktop.dart');
+  final _channel = MethodChannel('com.expidus.shell/desktop');
 
   @override
   void initState() {
     super.initState();
 
-    _desktopChannel.setMethodCallHandler((call) {
+    _dartChannel.setMethodCallHandler((call) {
       if (call.method == 'setCurrentApplication') {
         List<dynamic> args = List.from(call.arguments);
         if (!(args.length > 0 && args.length < 4)) {
@@ -70,7 +71,11 @@ class _DesktopUIState extends State<DesktopUI> {
                           Theme.of(context).appBarTheme.backgroundColor),
                       foregroundColor: MaterialStateProperty.all(
                           Theme.of(context).appBarTheme.foregroundColor)),
-                  onPressed: () {},
+                  onPressed: () {
+                    _channel.invokeMethod('toggleActionButton').onError((error,
+                            stackTrace) =>
+                        print('Failed to toggle the action button: $error'));
+                  },
                   child: FittedBox(
                       fit: BoxFit.fitWidth,
                       child: Row(children: [

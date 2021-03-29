@@ -1,9 +1,10 @@
 #include <expidus-shell/desktop.h>
 #include <expidus-shell/shell.h>
+#define WNCK_I_KNOW_THIS_IS_UNSTABLE 1
+#include <expidus-shell/utils.h>
 #include <flutter_linux/flutter_linux.h>
 #include <meta/display.h>
 #include <meta/meta-plugin.h>
-#define WNCK_I_KNOW_THIS_IS_UNSTABLE 1
 #include <libwnck/libwnck.h>
 #include <expidus-build.h>
 #include <flutter.h>
@@ -12,6 +13,7 @@ typedef struct {
 	FlDartProject* proj;
   FlView* view;
   FlMethodChannel* channel_dart;
+  FlMethodChannel* channel;
 
 	int monitor_index;
 	ExpidusShell* shell;
@@ -84,6 +86,44 @@ static gchar* cache_appicon(WnckApplication* app) {
     }
   }
   return NULL;
+}
+
+static void expidus_shell_desktop_method_handler(FlMethodChannel* channel, FlMethodCall* call, gpointer data) {
+  ExpidusShellDesktop* self = EXPIDUS_SHELL_DESKTOP(data);
+  ExpidusShellDesktopPrivate* priv = expidus_shell_desktop_get_instance_private(self);
+
+  GError* error = NULL;
+  if (!g_strcmp0(fl_method_call_get_name(call), "toggleActionButton")) {
+    WnckWindow* win = wnck_screen_get_active_window(priv->screen);
+    if (win != NULL) {
+      char* unique_bus_name = wnck_window_get_property_string(win, "_GTK_UNIQUE_BUS_NAME");
+      char* menubar_obj_path = wnck_window_get_property_string(win, "_GTK_MENUBAR_OBJECT_PATH");
+
+      GDBusConnection* session = g_bus_get_sync(G_BUS_TYPE_SESSION, NULL, NULL);
+
+      GtkMenu* menu = NULL;
+      if (unique_bus_name == NULL && menubar_obj_path == NULL) {
+        menu = GTK_MENU(wnck_action_menu_new(win));
+      } else {
+        GDBusMenuModel* menu_model = g_dbus_menu_model_get(session, unique_bus_name, menubar_obj_path);
+        menu = GTK_MENU(gtk_menu_new_from_model(G_MENU_MODEL(menu_model)));
+      }
+
+      GdkRectangle rect = { .x = 4, .y = 30 };
+      gtk_menu_popup_at_rect(menu, gtk_widget_get_window(GTK_WIDGET(self)), &rect, GDK_GRAVITY_SOUTH, GDK_GRAVITY_SOUTH, NULL);
+      g_object_unref(menu);
+    }
+
+    if (!fl_method_call_respond_success(call, fl_value_new_null(), &error)) {
+      g_error("Failed to respond to call: %s", error->message);
+      g_clear_error(&error);
+    }
+  } else {
+    if (!fl_method_call_respond(call, FL_METHOD_RESPONSE(fl_method_not_implemented_response_new()), &error)) {
+      g_error("Failed to respond to call: %s", error->message);
+      g_clear_error(&error);
+    }
+  }
 }
 
 static void expidus_shell_desktop_app_opened(WnckScreen* screen, WnckApplication* app, gpointer data) {
@@ -217,6 +257,9 @@ static void expidus_shell_desktop_constructed(GObject* obj) {
   FlBinaryMessenger* binmsg = fl_engine_get_binary_messenger(engine);
   priv->channel_dart = fl_method_channel_new(binmsg, "com.expidus.shell/desktop.dart", FL_METHOD_CODEC(fl_standard_method_codec_new()));
 
+  priv->channel = fl_method_channel_new(binmsg, "com.expidus.shell/desktop", FL_METHOD_CODEC(fl_standard_method_codec_new()));
+  fl_method_channel_set_method_call_handler(priv->channel, expidus_shell_desktop_method_handler, self, NULL);
+
   priv->screen = wnck_screen_get_default();
   g_assert(priv->screen);
   priv->sig_win_changed = g_signal_connect(priv->screen, "active-window-changed", G_CALLBACK(expidus_shell_desktop_win_changed), self);
@@ -230,6 +273,8 @@ static void expidus_shell_desktop_dispose(GObject* obj) {
 
   g_clear_object(&priv->view);
   g_clear_object(&priv->proj);
+  g_clear_object(&priv->channel_dart);
+  g_clear_object(&priv->channel);
 
   if (priv->sig_app_closed > 0) {
     g_signal_handler_disconnect(priv->screen, priv->sig_app_closed);
