@@ -123,6 +123,11 @@ static void expidus_shell_desktop_method_handler(FlMethodChannel* channel, FlMet
       GdkRectangle rect = { .x = 4, .y = 30 };
       gtk_menu_popup_at_rect(menu, gtk_widget_get_window(GTK_WIDGET(self)), &rect, GDK_GRAVITY_SOUTH, GDK_GRAVITY_SOUTH, NULL);
       g_object_unref(menu);
+    } else {
+      ExpidusShell* shell;
+      g_object_get(self, "shell", &shell, NULL);
+      g_assert(shell);
+      expidus_shell_toggle_dashboard(shell);
     }
 
     if (!fl_method_call_respond_success(call, fl_value_new_null(), &error)) {
@@ -140,6 +145,13 @@ static void expidus_shell_desktop_method_handler(FlMethodChannel* channel, FlMet
 
     expidus_shell_desktop_settings_changed(settings, "wallpaper-", self);
 
+    if (!fl_method_call_respond_success(call, fl_value_new_null(), &error)) {
+      g_error("Failed to respond to call: %s", error->message);
+      g_clear_error(&error);
+    }
+  } else if (!g_strcmp0(fl_method_call_get_name(call), "keepFocus")) {
+    WnckWindow* win = wnck_screen_get_previously_active_window(priv->screen);
+    if (win != NULL) wnck_window_activate(win, 0);
     if (!fl_method_call_respond_success(call, fl_value_new_null(), &error)) {
       g_error("Failed to respond to call: %s", error->message);
       g_clear_error(&error);
@@ -233,7 +245,6 @@ static void expidus_shell_desktop_constructed(GObject* obj) {
   priv->view = fl_view_new(priv->proj);
 
   gtk_container_add(GTK_CONTAINER(win), GTK_WIDGET(priv->view));
-	gtk_widget_show_all(GTK_WIDGET(self));
 
   MetaStrut* strut = g_slice_new0(MetaStrut);
   g_assert(strut);

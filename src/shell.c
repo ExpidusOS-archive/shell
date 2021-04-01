@@ -1,4 +1,6 @@
+#include <expidus-shell/ui/dashboard.h>
 #include <expidus-shell/ui/desktop.h>
+#include <expidus-shell/base-dashboard.h>
 #include <expidus-shell/base-desktop.h>
 #include <expidus-shell/shell.h>
 #include <meta/display.h>
@@ -7,11 +9,13 @@
 
 typedef struct {
 	GList* desktops;
+	GList* dashboards;
+
 	MetaPlugin* plugin;
 	GSettings* settings;
 
 	GType desktop_type;
-	GType overlay_type;
+	GType dashboard_type;
 	GType lockscreen_type;
 	GType notification_type;
 } ExpidusShellPrivate;
@@ -72,8 +76,12 @@ static void expidus_shell_constructed(GObject* obj) {
 	ExpidusShellPrivate* priv = expidus_shell_get_instance_private(self);
 
 	priv->settings = g_settings_new("com.expidus.shell");
+
 	priv->desktop_type = EXPIDUS_SHELL_TYPE_DESKTOP;
+	priv->dashboard_type = EXPIDUS_SHELL_TYPE_DASHBOARD;
+
 	priv->desktops = NULL;
+	priv->dashboards = NULL;
 }
 
 static void expidus_shell_finalize(GObject* obj) {
@@ -82,6 +90,7 @@ static void expidus_shell_finalize(GObject* obj) {
 
 	g_clear_object(&priv->settings);
 	g_clear_list(&priv->desktops, g_object_unref);
+	g_clear_list(&priv->dashboards, g_object_unref);
 
 	G_OBJECT_CLASS(expidus_shell_parent_class)->finalize(obj);
 }
@@ -121,10 +130,31 @@ void expidus_shell_sync_desktops(ExpidusShell* self) {
 	g_return_if_fail(priv);
 
 	//g_clear_list(&priv->desktops, g_object_unref);
+	//g_clear_list(&priv->dashboards, g_object_unref);
 
   MetaDisplay* disp = meta_plugin_get_display(priv->plugin);
   for (int i = 0; i < meta_display_get_n_monitors(disp); i++) {
 		ExpidusShellBaseDesktop* desktop = EXPIDUS_SHELL_BASE_DESKTOP(g_object_new(priv->desktop_type, "shell", self, "monitor-index", i, NULL));
 		priv->desktops = g_list_append(priv->desktops, desktop);
+			gtk_widget_show_all(GTK_WIDGET(desktop));
+	}
+}
+
+void expidus_shell_toggle_dashboard(ExpidusShell* self) {
+	g_return_if_fail(EXPIDUS_IS_SHELL(self));
+	ExpidusShellPrivate* priv = expidus_shell_get_instance_private(self);
+	g_return_if_fail(priv);
+
+	gboolean is_opened = priv->dashboards != NULL;
+	if (is_opened) {
+		g_clear_list(&priv->dashboards, g_object_unref);
+	} else {
+  	MetaDisplay* disp = meta_plugin_get_display(priv->plugin);
+  	for (int i = 0; i < meta_display_get_n_monitors(disp); i++) {
+			ExpidusShellBaseDashboard* dashboard = EXPIDUS_SHELL_BASE_DASHBOARD(g_object_new(priv->dashboard_type, "shell", self, "monitor-index", i, NULL));
+			priv->dashboards = g_list_append(priv->dashboards, dashboard);
+			gtk_widget_show_all(GTK_WIDGET(dashboard));
+  		gdk_window_set_events(gtk_widget_get_window(GTK_WIDGET(dashboard)), GDK_ALL_EVENTS_MASK);
+		}
 	}
 }

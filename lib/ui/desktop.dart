@@ -71,45 +71,48 @@ class _DesktopUIState extends State<DesktopUI> {
     return Scaffold(
         appBar: PreferredSize(
             preferredSize: Size.fromHeight(30),
-            child: AppBar(
-              automaticallyImplyLeading: false,
-              leadingWidth: ((Theme.of(context).appBarTheme.textTheme == null
-                                  ? Theme.of(context).textTheme
-                                  : Theme.of(context).appBarTheme.textTheme)
-                              .headline5
-                              .fontSize *
-                          _titleString.length) /
-                      2 +
-                  8,
-              leading: TextButton(
-                  style: ButtonStyle(
-                      textStyle: MaterialStateProperty.all(
-                          (Theme.of(context).appBarTheme.textTheme == null
-                                  ? Theme.of(context).textTheme
-                                  : Theme.of(context).appBarTheme.textTheme)
-                              .headline5),
-                      backgroundColor: MaterialStateProperty.all(
-                          Theme.of(context).appBarTheme.backgroundColor),
-                      foregroundColor: MaterialStateProperty.all(
-                          Theme.of(context).appBarTheme.foregroundColor)),
-                  onPressed: () {
-                    _channel.invokeMethod('toggleActionButton').onError((error,
-                            stackTrace) =>
-                        print('Failed to toggle the action button: $error'));
-                  },
-                  child: FittedBox(
-                      fit: BoxFit.fitWidth,
-                      child: Row(children: [
-                        Center(
-                            child: _titleIcon is String
-                                ? Image.file(new File(_titleIcon as String),
-                                    width: 22, height: 22)
-                                : Icon(_titleIcon as IconData, size: 22)),
-                        Text(_titleString)
-                      ]))),
+            child: TextButton(
+              onPressed: () => _channel.invokeMethod('keepFocus').onError(
+                  (error, stackTrace) => print('Failed to keep focus: $error')),
+              child: AppBar(
+                  automaticallyImplyLeading: false,
+                  leadingWidth: ((Theme.of(context).appBarTheme.textTheme ==
+                                          null
+                                      ? Theme.of(context).textTheme
+                                      : Theme.of(context).appBarTheme.textTheme)
+                                  .headline5
+                                  .fontSize *
+                              _titleString.length) /
+                          2 +
+                      8,
+                  leading: TextButton(
+                      style: ButtonStyle(
+                          textStyle: MaterialStateProperty.all(
+                              (Theme.of(context).appBarTheme.textTheme == null
+                                      ? Theme.of(context).textTheme
+                                      : Theme.of(context).appBarTheme.textTheme)
+                                  .headline5),
+                          backgroundColor: MaterialStateProperty.all(
+                              Theme.of(context).appBarTheme.backgroundColor),
+                          foregroundColor:
+                              MaterialStateProperty.all(Theme.of(context).appBarTheme.foregroundColor)),
+                      onPressed: () {
+                        _channel.invokeMethod('toggleActionButton').onError(
+                            (error, stackTrace) => print(
+                                'Failed to toggle the action button: $error'));
+                      },
+                      child: FittedBox(
+                          fit: BoxFit.fitWidth,
+                          child: Row(children: [
+                            Center(
+                                child: _titleIcon is String
+                                    ? Image.file(new File(_titleIcon as String),
+                                        width: 22, height: 22)
+                                    : Icon(_titleIcon as IconData, size: 22)),
+                            Text(_titleString)
+                          ])))),
             )),
         body: Container(
-            height: 100,
             constraints: BoxConstraints.tight(Size.infinite),
             decoration: BoxDecoration(
                 image: DecorationImage(image: _wallpaper, fit: BoxFit.fill))));

@@ -7,6 +7,7 @@
 #include <meta/meta-background-group.h>
 #include <meta/meta-monitor-manager.h>
 #include <meta/meta-workspace-manager.h>
+#include <handy.h>
 
 typedef struct {
   ClutterActor* bg_group;
@@ -78,6 +79,8 @@ static void expidus_shell_plugin_start(MetaPlugin* plugin) {
   GtkCssProvider* css_provider = gtk_css_provider_new();
   gtk_css_provider_load_from_resource(css_provider, "/com/expidus/shell/style.css");
   gtk_style_context_add_provider_for_screen(gdk_screen_get_default(), GTK_STYLE_PROVIDER(css_provider), GTK_STYLE_PROVIDER_PRIORITY_APPLICATION);
+
+  hdy_init();
 }
 
 static void expidus_shell_plugin_map(MetaPlugin* plugin, MetaWindowActor* win_actor) {

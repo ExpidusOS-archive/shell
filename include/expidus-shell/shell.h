@@ -14,5 +14,6 @@ struct _ExpidusShell {
 GList* expidus_shell_get_desktops(ExpidusShell* self);
 GSettings* expidus_shell_get_settings(ExpidusShell* self);
 void expidus_shell_sync_desktops(ExpidusShell* self);
+void expidus_shell_toggle_dashboard(ExpidusShell* self);
 
 G_END_DECLS

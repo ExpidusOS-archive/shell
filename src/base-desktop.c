@@ -69,14 +69,14 @@ static void expidus_shell_base_desktop_constructed(GObject* obj) {
   gtk_window_set_default_size(win, rect.width, rect.height);
   gtk_window_set_resizable(win, FALSE);
   gtk_widget_set_size_request(GTK_WIDGET(win), rect.width, rect.height);
-  gtk_window_set_accept_focus(win, FALSE);
+  gtk_window_set_accept_focus(win, TRUE);
 
   gtk_window_set_role(win, "expidus-shell-desktop");
   gtk_window_set_decorated(win, FALSE);
   gtk_window_set_type_hint(win, GDK_WINDOW_TYPE_HINT_DESKTOP);
   gtk_window_set_skip_taskbar_hint(win, TRUE);
   gtk_window_set_skip_pager_hint(win, TRUE);
-  gtk_window_set_focus_on_map(win, FALSE);
+  gtk_window_set_focus_on_map(win, TRUE);
 }
 
 static void expidus_shell_base_desktop_class_init(ExpidusShellBaseDesktopClass* klass) {
