@@ -1,3 +1,4 @@
+#include <expidus-shell/desktop.h>
 #include <expidus-shell/plugin.h>
 #include <expidus-shell/shell.h>
 #include <meta/meta-background.h>
@@ -20,7 +21,18 @@ static void on_monitors_changed(MetaMonitorManager* mmngr, MetaPlugin* plugin) {
   MetaDisplay* disp = meta_plugin_get_display(plugin);
   clutter_actor_destroy_all_children(priv->bg_group);
 
+  expidus_shell_sync_desktops(priv->shell);
+  GList* desktops = expidus_shell_get_desktops(priv->shell);
+  GSList* struts = NULL;
+
   for (int i = 0; i < meta_display_get_n_monitors(disp); i++) {
+    ExpidusShellDesktop* desktop = g_list_nth_data(desktops, i);
+    g_assert(desktop);
+
+    GSList* desktop_struts = expidus_shell_desktop_get_struts(desktop);
+    g_assert(desktop_struts);
+    struts = g_slist_concat(struts, desktop_struts);
+
     MetaRectangle rect;
     meta_display_get_monitor_geometry(disp, i, &rect);
 
@@ -42,7 +54,11 @@ static void on_monitors_changed(MetaMonitorManager* mmngr, MetaPlugin* plugin) {
     clutter_actor_add_child(priv->bg_group, bg_actor);
   }
 
-  expidus_shell_sync_desktops(priv->shell);
+  MetaWorkspaceManager* wsmngr = meta_display_get_workspace_manager(disp);
+  for (int i = 0; i < meta_workspace_manager_get_n_workspaces(wsmngr); i++) {
+    MetaWorkspace* ws = meta_workspace_manager_get_workspace_by_index(wsmngr, i);
+    meta_workspace_set_builtin_struts(ws, struts);
+  }
 }
 
 static void expidus_shell_plugin_start(MetaPlugin* plugin) {
@@ -66,11 +82,7 @@ static void expidus_shell_plugin_start(MetaPlugin* plugin) {
 }
 
 static void expidus_shell_plugin_map(MetaPlugin* plugin, MetaWindowActor* win_actor) {
-  MetaWindow* win = meta_window_actor_get_meta_window(win_actor);
-  MetaWindowType type = meta_window_get_window_type(win);
-
-  if (type == META_WINDOW_NORMAL) {
-  } else meta_plugin_map_completed(plugin, win_actor);
+  meta_plugin_map_completed(plugin, win_actor);
 }
 
 static void expidus_shell_plugin_constructed(GObject* obj) {
