@@ -238,11 +238,20 @@ static void expidus_shell_desktop_dispose(GObject* obj) {
   G_OBJECT_CLASS(expidus_shell_desktop_parent_class)->dispose(obj);
 }
 
+static GSList* expidus_shell_desktop_get_struts(ExpidusShellBaseDesktop* base_desktop) {
+  ExpidusShellDesktop* self = EXPIDUS_SHELL_DESKTOP(base_desktop);
+  ExpidusShellDesktopPrivate* priv = expidus_shell_desktop_get_instance_private(self);
+  return priv->struts;
+}
+
 static void expidus_shell_desktop_class_init(ExpidusShellDesktopClass* klass) {
 	GObjectClass* obj_class = G_OBJECT_CLASS(klass);
+  ExpidusShellBaseDesktopClass* base_desktop_class = EXPIDUS_SHELL_BASE_DESKTOP_CLASS(klass);
 
   obj_class->constructed = expidus_shell_desktop_constructed;
   obj_class->dispose = expidus_shell_desktop_dispose;
+
+  base_desktop_class->get_struts = expidus_shell_desktop_get_struts;
 }
 
 static void expidus_shell_desktop_init(ExpidusShellDesktop* self) {}
