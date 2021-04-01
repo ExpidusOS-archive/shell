@@ -11,7 +11,8 @@ struct _ExpidusShell {
 	GObject parent_instance;
 };
 
-GList* expidus_shell_get_desktops(ExpidusShell* shell);
+GList* expidus_shell_get_desktops(ExpidusShell* self);
+GSettings* expidus_shell_get_settings(ExpidusShell* self);
 void expidus_shell_sync_desktops(ExpidusShell* self);
 
 G_END_DECLS

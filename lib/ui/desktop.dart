@@ -12,6 +12,8 @@ class _DesktopUIState extends State<DesktopUI> {
   String _titleString = 'ExpidusOS';
   dynamic _titleIcon = Icons.apps;
   bool _isApp = false;
+  ImageProvider _wallpaper =
+      FileImage(new File('/usr/share/backgrounds/wallpaper/default.png'));
   final _dartChannel = MethodChannel('com.expidus.shell/desktop.dart');
   final _channel = MethodChannel('com.expidus.shell/desktop');
 
@@ -20,7 +22,23 @@ class _DesktopUIState extends State<DesktopUI> {
     super.initState();
 
     _dartChannel.setMethodCallHandler((call) {
-      if (call.method == 'setCurrentApplication') {
+      if (call.method == 'setWallpaper') {
+        List<dynamic> args = List.from(call.arguments);
+        if (args.length != 2) {
+          return Future.error(new Exception(
+              'Invalid range, must be equal to 2 (${args.length})'));
+        }
+
+        final uri = Uri.parse(args[0] as String);
+        final opt = args[1] as int;
+
+        setState(() {
+          _wallpaper = uri.scheme == 'file'
+              ? FileImage(new File(uri.path))
+              : NetworkImage(uri.toString());
+        });
+        return Future.value(null);
+      } else if (call.method == 'setCurrentApplication') {
         List<dynamic> args = List.from(call.arguments);
         if (!(args.length > 0 && args.length < 4)) {
           return Future.error(new Exception(
@@ -43,6 +61,9 @@ class _DesktopUIState extends State<DesktopUI> {
       return Future.error(call.noSuchMethod(Invocation.genericMethod(
           Symbol(call.method), call.arguments, call.arguments)));
     });
+
+    _channel.invokeMethod('syncWallpaper').onError(
+        (error, stackTrace) => print('Failed to sync wallpaper $error'));
   }
 
   @override
@@ -86,6 +107,11 @@ class _DesktopUIState extends State<DesktopUI> {
                                 : Icon(_titleIcon as IconData, size: 22)),
                         Text(_titleString)
                       ]))),
-            )));
+            )),
+        body: Container(
+            height: 100,
+            constraints: BoxConstraints.tight(Size.infinite),
+            decoration: BoxDecoration(
+                image: DecorationImage(image: _wallpaper, fit: BoxFit.fill))));
   }
 }

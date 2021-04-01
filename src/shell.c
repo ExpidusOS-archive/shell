@@ -20,6 +20,7 @@ G_DEFINE_TYPE_WITH_PRIVATE(ExpidusShell, expidus_shell, G_TYPE_OBJECT);
 enum {
 	PROP_0,
 	PROP_PLUGIN,
+	PROP_SETTINGS,
 	N_PROPS,
 
 	SIG_0 = 0,
@@ -54,6 +55,9 @@ static void expidus_shell_get_property(GObject* obj, guint prop_id, GValue* valu
 	switch (prop_id) {
 		case PROP_PLUGIN:
 			g_value_set_object(value, priv->plugin);
+			break;
+		case PROP_SETTINGS:
+			g_value_set_object(value, priv->settings);
 			break;
 		default:
 			G_OBJECT_WARN_INVALID_PROPERTY_ID(obj, prop_id, pspec);
@@ -91,6 +95,7 @@ static void expidus_shell_class_init(ExpidusShellClass* klass) {
 	obj_class->get_property = expidus_shell_get_property;
 
 	obj_props[PROP_PLUGIN] = g_param_spec_object("plugin", "Plugin", "The Mutter plugin to connect with.", META_TYPE_PLUGIN, G_PARAM_READWRITE | G_PARAM_CONSTRUCT_ONLY);
+	obj_props[PROP_SETTINGS] = g_param_spec_object("settings", "Settings", "The instance of settings for the shell.", G_TYPE_SETTINGS, G_PARAM_READABLE);
 	g_object_class_install_properties(obj_class, N_PROPS, obj_props);
 }
 
@@ -101,6 +106,13 @@ GList* expidus_shell_get_desktops(ExpidusShell* self) {
 	ExpidusShellPrivate* priv = expidus_shell_get_instance_private(self);
 	g_return_val_if_fail(priv, NULL);
 	return priv->desktops;
+}
+
+GSettings* expidus_shell_get_settings(ExpidusShell* self) {
+	g_return_val_if_fail(EXPIDUS_IS_SHELL(self), NULL);
+	ExpidusShellPrivate* priv = expidus_shell_get_instance_private(self);
+	g_return_val_if_fail(priv, NULL);
+	return priv->settings;
 }
 
 void expidus_shell_sync_desktops(ExpidusShell* self) {

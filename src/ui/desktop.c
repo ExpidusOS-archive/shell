@@ -21,6 +21,7 @@ typedef struct {
   gulong sig_win_changed;
   gulong sig_app_closed;
   gulong sig_app_opened;
+  gulong sig_settings_changed;
 } ExpidusShellDesktopPrivate;
 G_DEFINE_TYPE_WITH_PRIVATE(ExpidusShellDesktop, expidus_shell_desktop, EXPIDUS_SHELL_TYPE_BASE_DESKTOP);
 
@@ -36,9 +37,15 @@ static void expidus_shell_desktop_set_current_app_cb(GObject* obj, GAsyncResult*
     return;
   }
 
-  if (fl_method_response_get_result(resp, &error) == NULL) {
-    g_warning("Method returned error: %s", error->message);
-    return;
+  if (FL_IS_METHOD_ERROR_RESPONSE(resp)) {
+    FlMethodErrorResponse* err_resp = FL_METHOD_ERROR_RESPONSE(resp);
+    g_warning("Flutter response returned: %s - %s", fl_method_error_response_get_code(err_resp), fl_method_error_response_get_message(err_resp));
+  } else if (FL_IS_METHOD_NOT_IMPLEMENTED_RESPONSE(resp)) {
+  } else {
+    if (fl_method_response_get_result(resp, &error) == NULL) {
+      g_warning("Method returned error: %s", error->message);
+      return;
+    }
   }
 }
 
@@ -77,6 +84,21 @@ static gchar* cache_appicon(WnckApplication* app) {
   return NULL;
 }
 
+static void expidus_shell_desktop_settings_changed(GSettings* settings, char* key, gpointer data) {
+  ExpidusShellDesktop* self = EXPIDUS_SHELL_DESKTOP(data);
+  ExpidusShellDesktopPrivate* priv = expidus_shell_desktop_get_instance_private(self);
+
+  if (g_str_has_prefix(key, "wallpaper-")) {
+    gchar* wallpaper_uri = g_settings_get_string(settings, "wallpaper-uri");
+    GDesktopBackgroundStyle wallpaper_opts = g_settings_get_enum(settings, "wallpaper-options");
+    FlValue* args = fl_value_new_list();
+    fl_value_append_take(args, fl_value_new_string(wallpaper_uri));
+    fl_value_append_take(args, fl_value_new_int(wallpaper_opts));
+    fl_method_channel_invoke_method(priv->channel_dart, "setWallpaper", args, NULL, expidus_shell_desktop_set_current_app_cb, self);
+    g_debug("Updating wallpaper: %s %d", wallpaper_uri, wallpaper_opts);
+  }
+}
+
 static void expidus_shell_desktop_method_handler(FlMethodChannel* channel, FlMethodCall* call, gpointer data) {
   ExpidusShellDesktop* self = EXPIDUS_SHELL_DESKTOP(data);
   ExpidusShellDesktopPrivate* priv = expidus_shell_desktop_get_instance_private(self);
@@ -102,6 +124,21 @@ static void expidus_shell_desktop_method_handler(FlMethodChannel* channel, FlMet
       gtk_menu_popup_at_rect(menu, gtk_widget_get_window(GTK_WIDGET(self)), &rect, GDK_GRAVITY_SOUTH, GDK_GRAVITY_SOUTH, NULL);
       g_object_unref(menu);
     }
+
+    if (!fl_method_call_respond_success(call, fl_value_new_null(), &error)) {
+      g_error("Failed to respond to call: %s", error->message);
+      g_clear_error(&error);
+    }
+  } else if (!g_strcmp0(fl_method_call_get_name(call), "syncWallpaper")) {
+    ExpidusShell* shell;
+    g_object_get(self, "shell", &shell, NULL);
+    g_assert(shell);
+
+    GSettings* settings;
+	  g_object_get(shell, "settings", &settings, NULL);
+    g_assert(settings);
+
+    expidus_shell_desktop_settings_changed(settings, "wallpaper-", self);
 
     if (!fl_method_call_respond_success(call, fl_value_new_null(), &error)) {
       g_error("Failed to respond to call: %s", error->message);
@@ -171,8 +208,10 @@ static void expidus_shell_desktop_constructed(GObject* obj) {
   g_assert(shell);
 
 	MetaPlugin* plugin;
-	g_object_get(shell, "plugin", &plugin, NULL);
+  GSettings* settings;
+	g_object_get(shell, "plugin", &plugin, "settings", &settings, NULL);
 	g_assert(plugin);
+  g_assert(settings);
 
 	MetaDisplay* disp = meta_plugin_get_display(plugin);
   MetaRectangle rect;
@@ -214,6 +253,7 @@ static void expidus_shell_desktop_constructed(GObject* obj) {
   priv->sig_win_changed = g_signal_connect(priv->screen, "active-window-changed", G_CALLBACK(expidus_shell_desktop_win_changed), self);
   priv->sig_app_closed = g_signal_connect(priv->screen, "application-closed", G_CALLBACK(expidus_shell_desktop_app_closed), self);
   priv->sig_app_opened = g_signal_connect(priv->screen, "application-opened", G_CALLBACK(expidus_shell_desktop_app_opened), self);
+  priv->sig_settings_changed = g_signal_connect(settings, "changed", G_CALLBACK(expidus_shell_desktop_settings_changed), self);
 }
 
 static void expidus_shell_desktop_dispose(GObject* obj) {
