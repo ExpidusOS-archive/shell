@@ -1,4 +1,4 @@
-#include <expidus-shell/desktop.h>
+#include <expidus-shell/ui/desktop.h>
 #include <expidus-shell/shell.h>
 #define WNCK_I_KNOW_THIS_IS_UNSTABLE 1
 #include <expidus-shell/utils.h>
@@ -15,8 +15,6 @@ typedef struct {
   FlMethodChannel* channel_dart;
   FlMethodChannel* channel;
 
-	int monitor_index;
-	ExpidusShell* shell;
   GSList* struts;
 
   WnckScreen* screen;
@@ -24,16 +22,7 @@ typedef struct {
   gulong sig_app_closed;
   gulong sig_app_opened;
 } ExpidusShellDesktopPrivate;
-G_DEFINE_TYPE_WITH_PRIVATE(ExpidusShellDesktop, expidus_shell_desktop, GTK_TYPE_WINDOW);
-
-enum {
-	PROP_0,
-	PROP_SHELL,
-	PROP_MONITOR_INDEX,
-	N_PROPS
-};
-
-static GParamSpec* obj_props[N_PROPS] = { NULL };
+G_DEFINE_TYPE_WITH_PRIVATE(ExpidusShellDesktop, expidus_shell_desktop, EXPIDUS_SHELL_TYPE_BASE_DESKTOP);
 
 static void expidus_shell_desktop_set_current_app_cb(GObject* obj, GAsyncResult* result, gpointer data) {
   ExpidusShellDesktop* self = EXPIDUS_SHELL_DESKTOP(data);
@@ -168,40 +157,6 @@ static void expidus_shell_desktop_win_changed(WnckScreen* screen, WnckWindow* pr
   }
 }
 
-static void expidus_shell_desktop_set_property(GObject* obj, guint prop_id, const GValue* value, GParamSpec* pspec) {
-  ExpidusShellDesktop* self = EXPIDUS_SHELL_DESKTOP(obj);
-  ExpidusShellDesktopPrivate* priv = expidus_shell_desktop_get_instance_private(self);
-
-  switch (prop_id) {
-    case PROP_SHELL:
-      priv->shell = g_value_get_object(value);
-      break;
-    case PROP_MONITOR_INDEX:
-      priv->monitor_index = g_value_get_uint(value);
-      break;
-    default:
-      G_OBJECT_WARN_INVALID_PROPERTY_ID(obj, prop_id, pspec);
-      break;
-  }
-}
-
-static void expidus_shell_desktop_get_property(GObject* obj, guint prop_id, GValue* value, GParamSpec* pspec) {
-  ExpidusShellDesktop* self = EXPIDUS_SHELL_DESKTOP(obj);
-  ExpidusShellDesktopPrivate* priv = expidus_shell_desktop_get_instance_private(self);
-
-  switch (prop_id) {
-    case PROP_SHELL:
-      g_value_set_object(value, priv->shell);
-      break;
-    case PROP_MONITOR_INDEX:
-      g_value_set_uint(value, priv->monitor_index);
-      break;
-    default:
-      G_OBJECT_WARN_INVALID_PROPERTY_ID(obj, prop_id, pspec);
-      break;
-  }
-}
-
 static void expidus_shell_desktop_constructed(GObject* obj) {
   G_OBJECT_CLASS(expidus_shell_desktop_parent_class)->constructed(obj);
 
@@ -209,25 +164,19 @@ static void expidus_shell_desktop_constructed(GObject* obj) {
   ExpidusShellDesktopPrivate* priv = expidus_shell_desktop_get_instance_private(self);
 
   GtkWindow* win = GTK_WINDOW(self);
-  gtk_window_set_role(win, "expidus-shell-desktop");
-  gtk_window_set_decorated(win, FALSE);
-  gtk_window_set_type_hint(win, GDK_WINDOW_TYPE_HINT_DESKTOP);
-  gtk_window_set_skip_taskbar_hint(win, TRUE);
-  gtk_window_set_skip_pager_hint(win, TRUE);
-  gtk_window_set_focus_on_map(win, FALSE);
+
+  ExpidusShell* shell;
+  gint monitor_index;
+  g_object_get(self, "shell", &shell, "monitor-index", &monitor_index, NULL);
+  g_assert(shell);
 
 	MetaPlugin* plugin;
-	g_object_get(priv->shell, "plugin", &plugin, NULL);
+	g_object_get(shell, "plugin", &plugin, NULL);
 	g_assert(plugin);
 
 	MetaDisplay* disp = meta_plugin_get_display(plugin);
   MetaRectangle rect;
-  meta_display_get_monitor_geometry(disp, priv->monitor_index, &rect);
-  gtk_window_move(win, rect.x, rect.y);
-  gtk_window_set_default_size(win, rect.width, rect.height);
-  gtk_window_set_resizable(win, FALSE);
-  gtk_widget_set_size_request(GTK_WIDGET(win), rect.width, rect.height);
-  gtk_window_set_accept_focus(win, FALSE);
+  meta_display_get_monitor_geometry(disp, monitor_index, &rect);
 
 	priv->proj = fl_dart_project_new();
 
@@ -239,7 +188,7 @@ static void expidus_shell_desktop_constructed(GObject* obj) {
 	priv->proj->assets_path = g_build_filename(EXPIDUS_SHELL_LIBDIR, "assets", NULL);
 	priv->proj->icu_data_path = g_build_filename(EXPIDUS_SHELL_LIBDIR, "icudtl.dat", NULL);
 
-  char* argv[] = { g_strdup_printf("%d", priv->monitor_index), "desktop", NULL };
+  char* argv[] = { g_strdup_printf("%d", monitor_index), "desktop", NULL };
   fl_dart_project_set_dart_entrypoint_arguments(priv->proj, argv);
 
   priv->view = fl_view_new(priv->proj);
@@ -292,21 +241,8 @@ static void expidus_shell_desktop_dispose(GObject* obj) {
 static void expidus_shell_desktop_class_init(ExpidusShellDesktopClass* klass) {
 	GObjectClass* obj_class = G_OBJECT_CLASS(klass);
 
-  obj_class->set_property = expidus_shell_desktop_set_property;
-  obj_class->get_property = expidus_shell_desktop_get_property;
   obj_class->constructed = expidus_shell_desktop_constructed;
   obj_class->dispose = expidus_shell_desktop_dispose;
-
-  obj_props[PROP_SHELL] = g_param_spec_object("shell", "Shell", "The ExpidusOS Shell instance to connect to.", EXPIDUS_TYPE_SHELL, G_PARAM_CONSTRUCT_ONLY | G_PARAM_READWRITE);
-  obj_props[PROP_MONITOR_INDEX] = g_param_spec_uint("monitor-index", "Monitor Index", "The monitor's index to render and use.", 0, 255, 0, G_PARAM_CONSTRUCT_ONLY | G_PARAM_READWRITE);
-  g_object_class_install_properties(obj_class, N_PROPS, obj_props);
 }
 
 static void expidus_shell_desktop_init(ExpidusShellDesktop* self) {}
-
-GSList* expidus_shell_desktop_get_struts(ExpidusShellDesktop* self) {
-  g_return_val_if_fail(EXPIDUS_SHELL_IS_DESKTOP(self), NULL);
-  ExpidusShellDesktopPrivate* priv = expidus_shell_desktop_get_instance_private(self);
-  g_return_val_if_fail(priv, NULL);
-  return priv->struts;
-}

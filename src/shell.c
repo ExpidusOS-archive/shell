@@ -1,4 +1,5 @@
-#include <expidus-shell/desktop.h>
+#include <expidus-shell/ui/desktop.h>
+#include <expidus-shell/base-desktop.h>
 #include <expidus-shell/shell.h>
 #include <meta/display.h>
 #include <meta/meta-plugin.h>
@@ -111,7 +112,7 @@ void expidus_shell_sync_desktops(ExpidusShell* self) {
 
   MetaDisplay* disp = meta_plugin_get_display(priv->plugin);
   for (int i = 0; i < meta_display_get_n_monitors(disp); i++) {
-		ExpidusShellDesktop* desktop = EXPIDUS_SHELL_DESKTOP(g_object_new(priv->desktop_type, "shell", self, "monitor-index", i, NULL));
+		ExpidusShellBaseDesktop* desktop = EXPIDUS_SHELL_BASE_DESKTOP(g_object_new(priv->desktop_type, "shell", self, "monitor-index", i, NULL));
 		priv->desktops = g_list_append(priv->desktops, desktop);
 	}
 }

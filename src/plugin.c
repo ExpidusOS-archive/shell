@@ -1,4 +1,4 @@
-#include <expidus-shell/desktop.h>
+#include <expidus-shell/base-desktop.h>
 #include <expidus-shell/plugin.h>
 #include <expidus-shell/shell.h>
 #include <meta/meta-background.h>
@@ -26,11 +26,10 @@ static void on_monitors_changed(MetaMonitorManager* mmngr, MetaPlugin* plugin) {
   GSList* struts = NULL;
 
   for (int i = 0; i < meta_display_get_n_monitors(disp); i++) {
-    ExpidusShellDesktop* desktop = g_list_nth_data(desktops, i);
+    ExpidusShellBaseDesktop* desktop = g_list_nth_data(desktops, i);
     g_assert(desktop);
 
-    GSList* desktop_struts = expidus_shell_desktop_get_struts(desktop);
-    g_assert(desktop_struts);
+    GSList* desktop_struts = expidus_shell_base_desktop_get_struts(desktop);
     struts = g_slist_concat(struts, desktop_struts);
 
     MetaRectangle rect;
