@@ -105,8 +105,9 @@ static void expidus_shell_desktop_method_handler(FlMethodChannel* channel, FlMet
 
   GError* error = NULL;
   if (!g_strcmp0(fl_method_call_get_name(call), "toggleActionButton")) {
-    WnckWindow* win = wnck_screen_get_active_window(priv->screen);
+    WnckWindow* win = wnck_screen_get_previously_active_window(priv->screen);
     if (win != NULL) {
+      wnck_window_activate(win, 0);
       char* unique_bus_name = wnck_window_get_property_string(win, "_GTK_UNIQUE_BUS_NAME");
       char* menubar_obj_path = wnck_window_get_property_string(win, "_GTK_MENUBAR_OBJECT_PATH");
 
@@ -120,14 +121,14 @@ static void expidus_shell_desktop_method_handler(FlMethodChannel* channel, FlMet
         menu = GTK_MENU(gtk_menu_new_from_model(G_MENU_MODEL(menu_model)));
       }
 
-      GdkRectangle rect = { .x = 4, .y = 30 };
+      GdkRectangle rect = { .x = 4, .y = 30, .width = 100, .height = 100 };
       gtk_menu_popup_at_rect(menu, gtk_widget_get_window(GTK_WIDGET(self)), &rect, GDK_GRAVITY_SOUTH, GDK_GRAVITY_SOUTH, NULL);
       g_object_unref(menu);
     } else {
       ExpidusShell* shell;
       g_object_get(self, "shell", &shell, NULL);
       g_assert(shell);
-      expidus_shell_toggle_dashboard(shell);
+      expidus_shell_toggle_dashboard(shell, EXPIDUS_SHELL_DASHBOARD_START_MODE_NONE);
     }
 
     if (!fl_method_call_respond_success(call, fl_value_new_null(), &error)) {

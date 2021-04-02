@@ -12,4 +12,10 @@ struct _ExpidusShellBaseDashboardClass {
   GtkWindowClass parent_class;
 };
 
+typedef enum {
+  EXPIDUS_SHELL_DASHBOARD_START_MODE_NONE = 0,
+  EXPIDUS_SHELL_DASHBOARD_START_MODE_LEFT_DRAWER,
+  EXPIDUS_SHELL_DASHBOARD_START_MODE_RIGHT_DRAWER
+} ExpidusShellDashboardStartMode;
+
 G_END_DECLS

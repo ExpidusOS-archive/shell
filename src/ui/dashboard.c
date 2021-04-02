@@ -2,6 +2,8 @@
 #include <expidus-shell/shell.h>
 #include <expidus-build.h>
 #include <flutter.h>
+#include <meta/display.h>
+#include <meta/meta-plugin.h>
 
 typedef struct {
 	FlDartProject* proj;
@@ -10,6 +12,7 @@ typedef struct {
   FlMethodChannel* channel;
 
   gboolean supports_alpha;
+  gchar* background_path;
 } ExpidusShellDashboardPrivate;
 G_DEFINE_TYPE_WITH_PRIVATE(ExpidusShellDashboard, expidus_shell_dashboard, EXPIDUS_SHELL_TYPE_BASE_DASHBOARD);
 
@@ -53,8 +56,29 @@ static void expidus_shell_dashboard_constructed(GObject* obj) {
   g_signal_connect(self, "screen-changed", G_CALLBACK(expidus_shell_dashboard_screen_changed), NULL);
   expidus_shell_dashboard_screen_changed(GTK_WIDGET(self), NULL, NULL);
 
+  ExpidusShell* shell;
   gint monitor_index;
-  g_object_get(self, "monitor-index", &monitor_index, NULL);
+  ExpidusShellDashboardStartMode start_mode;
+  g_object_get(self, "shell", &shell, "monitor-index", &monitor_index, "start-mode", &start_mode, NULL);
+
+	MetaPlugin* plugin;
+	g_object_get(shell, "plugin", &plugin, NULL);
+	g_assert(plugin);
+
+	MetaDisplay* disp = meta_plugin_get_display(plugin);
+  MetaRectangle rect;
+  meta_display_get_monitor_geometry(disp, monitor_index, &rect);
+
+  priv->background_path = g_build_filename(g_get_tmp_dir(), g_strdup_printf("expidus-shell-dashboard-%d-%d.png", getpid(), monitor_index), NULL);
+  GdkPixbuf* screenshot = gdk_pixbuf_get_from_window(gdk_get_default_root_window(), rect.x, rect.y, rect.width, rect.height);
+  GError* error = NULL;
+  if (!gdk_pixbuf_save(screenshot, priv->background_path, "png", &error, NULL)) {
+    g_object_unref(screenshot);
+    g_critical("Failed to save screenshot to %s: %s", priv->background_path, error->message);
+    g_clear_error(&error);
+    exit(EXIT_FAILURE);
+  }
+  g_object_unref(screenshot);
 
 	priv->proj = fl_dart_project_new();
 
@@ -66,7 +90,7 @@ static void expidus_shell_dashboard_constructed(GObject* obj) {
 	priv->proj->assets_path = g_build_filename(EXPIDUS_SHELL_LIBDIR, "assets", NULL);
 	priv->proj->icu_data_path = g_build_filename(EXPIDUS_SHELL_LIBDIR, "icudtl.dat", NULL);
 
-  char* argv[] = { g_strdup_printf("%d", monitor_index), "dashboard", NULL };
+  char* argv[] = { g_strdup_printf("%d", monitor_index), "dashboard", priv->background_path, g_strdup_printf("%d", start_mode), NULL };
   fl_dart_project_set_dart_entrypoint_arguments(priv->proj, argv);
 
   priv->view = fl_view_new(priv->proj);
@@ -82,6 +106,8 @@ static void expidus_shell_dashboard_dispose(GObject* obj) {
   g_clear_object(&priv->proj);
   g_clear_object(&priv->channel_dart);
   g_clear_object(&priv->channel);
+  if (priv->background_path) remove(priv->background_path);
+  g_clear_pointer(&priv->background_path, g_free);
 
   G_OBJECT_CLASS(expidus_shell_dashboard_parent_class)->dispose(obj);
 }

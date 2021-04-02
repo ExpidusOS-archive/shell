@@ -97,8 +97,11 @@ expidus-shell.bin
 !include/expidus-shell
 
 # Generated files
+lib/dbus/*.dart
 *-resources.c
 *-resources.h
+*-enums.c
+*-enums.h
 *.o
 *.*~
 flutter_assets

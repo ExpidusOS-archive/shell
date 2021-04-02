@@ -2,10 +2,12 @@
 #include <expidus-shell/shell.h>
 #include <meta/display.h>
 #include <meta/meta-plugin.h>
+#include <expidus-shell-enums.h>
 
 typedef struct {
   int monitor_index;
   ExpidusShell* shell;
+  ExpidusShellDashboardStartMode start_mode;
 } ExpidusShellBaseDashboardPrivate;
 G_DEFINE_TYPE_WITH_PRIVATE(ExpidusShellBaseDashboard, expidus_shell_base_dashboard, GTK_TYPE_WINDOW);
 
@@ -13,6 +15,7 @@ enum {
 	PROP_0,
 	PROP_SHELL,
 	PROP_MONITOR_INDEX,
+  PROP_START_MODE,
 	N_PROPS
 };
 
@@ -28,6 +31,9 @@ static void expidus_shell_base_dashboard_set_property(GObject* obj, guint prop_i
       break;
     case PROP_MONITOR_INDEX:
       priv->monitor_index = g_value_get_uint(value);
+      break;
+    case PROP_START_MODE:
+      priv->start_mode = g_value_get_enum(value);
       break;
     default:
       G_OBJECT_WARN_INVALID_PROPERTY_ID(obj, prop_id, pspec);
@@ -45,6 +51,9 @@ static void expidus_shell_base_dashboard_get_property(GObject* obj, guint prop_i
       break;
     case PROP_MONITOR_INDEX:
       g_value_set_uint(value, priv->monitor_index);
+      break;
+    case PROP_START_MODE:
+      g_value_set_enum(value, priv->start_mode);
       break;
     default:
       G_OBJECT_WARN_INVALID_PROPERTY_ID(obj, prop_id, pspec);
@@ -92,6 +101,7 @@ static void expidus_shell_base_dashboard_class_init(ExpidusShellBaseDashboardCla
 
   obj_props[PROP_SHELL] = g_param_spec_object("shell", "Shell", "The ExpidusOS Shell instance to connect to.", EXPIDUS_TYPE_SHELL, G_PARAM_CONSTRUCT_ONLY | G_PARAM_READWRITE);
   obj_props[PROP_MONITOR_INDEX] = g_param_spec_uint("monitor-index", "Monitor Index", "The monitor's index to render and use.", 0, 255, 0, G_PARAM_CONSTRUCT_ONLY | G_PARAM_READWRITE);
+  obj_props[PROP_START_MODE] = g_param_spec_enum("start-mode", "Startup Mode", "The state of the dashboard on startup", EXPIDUS_TYPE_SHELL_DASHBOARD_START_MODE, EXPIDUS_SHELL_DASHBOARD_START_MODE_NONE, G_PARAM_CONSTRUCT_ONLY | G_PARAM_READWRITE);
   g_object_class_install_properties(obj_class, N_PROPS, obj_props);
 }
 

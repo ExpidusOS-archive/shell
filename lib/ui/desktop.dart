@@ -3,6 +3,16 @@ import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
+enum _WallpaperStyle {
+  NONE,
+  WALLPAPER,
+  CENTERED,
+  SCALED,
+  STRETCHED,
+  ZOOM,
+  SPANNED
+}
+
 class DesktopUI extends StatefulWidget {
   @override
   _DesktopUIState createState() => _DesktopUIState();
@@ -14,6 +24,7 @@ class _DesktopUIState extends State<DesktopUI> {
   bool _isApp = false;
   ImageProvider _wallpaper =
       FileImage(new File('/usr/share/backgrounds/wallpaper/default.png'));
+  _WallpaperStyle _wallpaperStyle = _WallpaperStyle.NONE;
   final _dartChannel = MethodChannel('com.expidus.shell/desktop.dart');
   final _channel = MethodChannel('com.expidus.shell/desktop');
 
@@ -36,6 +47,7 @@ class _DesktopUIState extends State<DesktopUI> {
           _wallpaper = uri.scheme == 'file'
               ? FileImage(new File(uri.path))
               : NetworkImage(uri.toString());
+          _wallpaperStyle = _WallpaperStyle.values[opt];
         });
         return Future.value(null);
       } else if (call.method == 'setCurrentApplication') {
@@ -115,6 +127,10 @@ class _DesktopUIState extends State<DesktopUI> {
         body: Container(
             constraints: BoxConstraints.tight(Size.infinite),
             decoration: BoxDecoration(
-                image: DecorationImage(image: _wallpaper, fit: BoxFit.fill))));
+                image: DecorationImage(
+                    image: _wallpaper,
+                    fit: _wallpaperStyle == _WallpaperStyle.ZOOM
+                        ? BoxFit.contain
+                        : BoxFit.fill))));
   }
 }

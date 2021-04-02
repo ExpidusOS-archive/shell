@@ -140,7 +140,34 @@ void expidus_shell_sync_desktops(ExpidusShell* self) {
 	}
 }
 
-void expidus_shell_toggle_dashboard(ExpidusShell* self) {
+void expidus_shell_toggle_dashboard(ExpidusShell* self, ExpidusShellDashboardStartMode start_mode) {
+	g_return_if_fail(EXPIDUS_IS_SHELL(self));
+	ExpidusShellPrivate* priv = expidus_shell_get_instance_private(self);
+	g_return_if_fail(priv);
+
+	gboolean is_opened = priv->dashboards != NULL;
+	if (is_opened) expidus_shell_hide_dashboard(self);
+	else expidus_shell_show_dashboard(self, start_mode);
+}
+
+void expidus_shell_show_dashboard(ExpidusShell* self, ExpidusShellDashboardStartMode start_mode) {
+	g_return_if_fail(EXPIDUS_IS_SHELL(self));
+	ExpidusShellPrivate* priv = expidus_shell_get_instance_private(self);
+	g_return_if_fail(priv);
+
+	gboolean is_opened = priv->dashboards != NULL;
+	if (!is_opened) {
+  	MetaDisplay* disp = meta_plugin_get_display(priv->plugin);
+  	for (int i = 0; i < meta_display_get_n_monitors(disp); i++) {
+			ExpidusShellBaseDashboard* dashboard = EXPIDUS_SHELL_BASE_DASHBOARD(g_object_new(priv->dashboard_type, "shell", self, "monitor-index", i, "start-mode", start_mode, NULL));
+			priv->dashboards = g_list_append(priv->dashboards, dashboard);
+			gtk_widget_show_all(GTK_WIDGET(dashboard));
+  		gdk_window_set_events(gtk_widget_get_window(GTK_WIDGET(dashboard)), GDK_ALL_EVENTS_MASK);
+		}
+	}
+}
+
+void expidus_shell_hide_dashboard(ExpidusShell* self) {
 	g_return_if_fail(EXPIDUS_IS_SHELL(self));
 	ExpidusShellPrivate* priv = expidus_shell_get_instance_private(self);
 	g_return_if_fail(priv);
@@ -148,13 +175,5 @@ void expidus_shell_toggle_dashboard(ExpidusShell* self) {
 	gboolean is_opened = priv->dashboards != NULL;
 	if (is_opened) {
 		g_clear_list(&priv->dashboards, g_object_unref);
-	} else {
-  	MetaDisplay* disp = meta_plugin_get_display(priv->plugin);
-  	for (int i = 0; i < meta_display_get_n_monitors(disp); i++) {
-			ExpidusShellBaseDashboard* dashboard = EXPIDUS_SHELL_BASE_DASHBOARD(g_object_new(priv->dashboard_type, "shell", self, "monitor-index", i, NULL));
-			priv->dashboards = g_list_append(priv->dashboards, dashboard);
-			gtk_widget_show_all(GTK_WIDGET(dashboard));
-  		gdk_window_set_events(gtk_widget_get_window(GTK_WIDGET(dashboard)), GDK_ALL_EVENTS_MASK);
-		}
 	}
 }

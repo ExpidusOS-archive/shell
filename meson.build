@@ -2,6 +2,7 @@ project('expidus-shell', 'c', license: 'GPL-3.0-only', version: '0.1.0-prealpha'
 
 flutter_exe = find_program('flutter', required: true)
 dart_exe = find_program('dart', required: true)
+dart_dbus_exe = find_program('dart-dbus', required: true)
 
 gnome = import('gnome')
 fs = import('fs')
@@ -10,6 +11,7 @@ gtk = dependency('gtk+-3.0')
 gio = dependency('gio-2.0')
 mutter = dependency('libmutter-7')
 wnck = dependency('libwnck-3.0')
+dbus = dependency('dbus-1')
 
 # Flutter variables
 flutter_version = run_command('sh', ['-c', flutter_exe.full_path() + ' --version | head -n1 | cut -f2 -d \' \''])
@@ -40,6 +42,38 @@ endif
 flutter_enginedir = join_paths(fs.parent(flutter_exe.full_path()), 'cache', 'artifacts', 'engine')
 mutter_rpath = join_paths(mutter.get_pkgconfig_variable('libdir'), 'mutter-' + mutter.get_pkgconfig_variable('apiversion'))
 shell_libdir = join_paths(get_option('libdir'), 'expidus-shell-' + meson.project_version())
+dbus_iface_paths = ['data/dbus', dbus.get_pkgconfig_variable('interfaces_dir')]
+dbus_ifaces = ['org.freedesktop.Accounts.User', 'org.freedesktop.Accounts']
+
+dbus_ifaces_real_paths = []
+foreach iface : dbus_ifaces
+	added_path = false
+	foreach path : dbus_iface_paths
+		p = join_paths(path, iface + '.xml')
+		if fs.is_file(p) or fs.is_symlink(p)
+			dbus_ifaces_real_paths += [p]
+			added_path = true
+			break
+		endif
+	endforeach
+	if not added_path
+		error('Cannot find the interface for ' + iface)
+	endif
+endforeach
+
+foreach p : dbus_ifaces_real_paths
+	iface = fs.replace_suffix(fs.name(p), '')
+	message('Generating Dart DBus client and remote objects for ' + iface + ' (' + p + ')')
+	client = run_command(dart_dbus_exe, ['generate-object', p, '-o', join_paths(meson.current_source_dir(), 'lib/dbus/' + iface + '.dart')])
+	remote = run_command(dart_dbus_exe, ['generate-remote-object', p, '-o', join_paths(meson.current_source_dir(), 'lib/dbus/' + iface + '-remote.dart')])
+
+	if not (client.returncode() == 0)
+		error('Failed to compile the client DBus Dart object: ' + client.stderr())
+	endif
+	if not (remote.returncode() == 0)
+		error('Failed to compile the remote DBus Dart object: ' + remote.stderr())
+	endif
+endforeach
 
 # Flutter assets
 custom_target('assets',
@@ -98,12 +132,13 @@ configure_file(input: 'data/build.h.in', output: 'expidus-build.h', configuratio
 shell_res = gnome.compile_resources('expidus-shell-resources', 'data/res/shell.gresource.xml',
 	source_dir: 'data/res',
 	c_name: 'expidus_shell')
+shell_enums = gnome.mkenums_simple('expidus-shell-enums', sources: ['include/expidus-shell/base-dashboard.h'])
 
-executable('expidus-shell.bin', [shell_res,
-	'src/ui/dashboard.c', 'src/ui/desktop.c',
-	'src/base-dashboard.c', 'src/base-desktop.c',
-	'src/main.c', 'src/plugin.c', 'src/shell.c', 'src/utils.c'],
-	include_directories: include_directories('include', join_paths(flutter_enginedir, flutter_full_target)),
+executable('expidus-shell.bin', [shell_res, shell_enums,
+		'src/ui/dashboard.c', 'src/ui/desktop.c',
+		'src/base-dashboard.c', 'src/base-desktop.c',
+		'src/main.c', 'src/overlay.c', 'src/plugin.c', 'src/shell.c', 'src/utils.c'],
+	include_directories: include_directories('include', 'include/expidus-shell', join_paths(flutter_enginedir, flutter_full_target)),
 	install: true,
 	build_rpath: mutter_rpath,
 	install_rpath: mutter_rpath,
