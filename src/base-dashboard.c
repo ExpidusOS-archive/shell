@@ -89,7 +89,6 @@ static void expidus_shell_base_dashboard_constructed(GObject* obj) {
   gtk_window_set_skip_pager_hint(win, TRUE);
   gtk_window_set_modal(win, TRUE);
   gtk_widget_add_events(GTK_WIDGET(win), GDK_ALL_EVENTS_MASK);
-  gtk_window_fullscreen(win);
 }
 
 static void expidus_shell_base_dashboard_class_init(ExpidusShellBaseDashboardClass* klass) {

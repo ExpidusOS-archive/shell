@@ -2,6 +2,7 @@
 #include <expidus-shell/ui/desktop.h>
 #include <expidus-shell/base-dashboard.h>
 #include <expidus-shell/base-desktop.h>
+#include <expidus-shell/overlay.h>
 #include <expidus-shell/shell.h>
 #include <meta/display.h>
 #include <meta/meta-plugin.h>
@@ -10,6 +11,7 @@
 typedef struct {
 	GList* desktops;
 	GList* dashboards;
+	GList* overlays;
 
 	MetaPlugin* plugin;
 	GSettings* settings;
@@ -129,14 +131,36 @@ void expidus_shell_sync_desktops(ExpidusShell* self) {
 	ExpidusShellPrivate* priv = expidus_shell_get_instance_private(self);
 	g_return_if_fail(priv);
 
-	//g_clear_list(&priv->desktops, g_object_unref);
-	//g_clear_list(&priv->dashboards, g_object_unref);
+	for (GList* item = priv->desktops; item != NULL; item = g_list_next(item)) {
+		ExpidusShellBaseDesktop* desktop = item->data;
+		if (desktop == NULL || !EXPIDUS_SHELL_IS_BASE_DESKTOP(desktop)) continue;
+		gtk_widget_hide(GTK_WIDGET(desktop));
+	}
+
+	for (GList* item = priv->dashboards; item != NULL; item = g_list_next(item)) {
+		ExpidusShellBaseDashboard* dashboard = item->data;
+		if (dashboard == NULL || !EXPIDUS_SHELL_IS_BASE_DASHBOARD(dashboard)) continue;
+		gtk_widget_hide(GTK_WIDGET(dashboard));
+	}
+
+	for (GList* item = priv->overlays; item != NULL; item = g_list_next(item)) {
+		ExpidusShellOverlay* overlay = item->data;
+		if (overlay == NULL || !EXPIDUS_SHELL_IS_OVERLAY(overlay)) continue;
+		gtk_widget_hide(GTK_WIDGET(overlay));
+	}
+
+	g_clear_list(&priv->desktops, g_object_unref);
+	g_clear_list(&priv->dashboards, g_object_unref);
+	g_clear_list(&priv->overlays, g_object_unref);
 
   MetaDisplay* disp = meta_plugin_get_display(priv->plugin);
   for (int i = 0; i < meta_display_get_n_monitors(disp); i++) {
 		ExpidusShellBaseDesktop* desktop = EXPIDUS_SHELL_BASE_DESKTOP(g_object_new(priv->desktop_type, "shell", self, "monitor-index", i, NULL));
 		priv->desktops = g_list_append(priv->desktops, desktop);
-			gtk_widget_show_all(GTK_WIDGET(desktop));
+		gtk_widget_show_all(GTK_WIDGET(desktop));
+
+		ExpidusShellOverlay* overlay = EXPIDUS_SHELL_OVERLAY(g_object_new(EXPIDUS_SHELL_TYPE_OVERLAY, "shell", self, "monitor-index", i, NULL));
+		priv->overlays = g_list_append(priv->overlays, overlay);
 	}
 }
 
