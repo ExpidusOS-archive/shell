@@ -123,11 +123,13 @@ conf_data.set('FLUTTER_VERSION', flutter_version)
 conf_data.set('FLUTTER_TARGET', flutter_target)
 conf_data.set('FLUTTER_FULL_TARGET', flutter_full_target)
 conf_data.set('PREFIX', get_option('prefix'))
+conf_data.set('BINDIR', get_option('bindir'))
 conf_data.set('LIBDIR', get_option('libdir'))
 conf_data.set('LIBEXECDIR', get_option('libexecdir'))
 conf_data.set('DATADIR', get_option('datadir'))
 conf_data.set('EXPIDUS_SHELL_VERSION', meson.project_version())
 configure_file(input: 'data/build.h.in', output: 'expidus-build.h', configuration: conf_data)
+configure_file(input: 'data/expidus-shell.desktop.in', output: 'expidus-shell.desktop', configuration: conf_data, install: true, install_dir: join_paths(get_option('datadir'), 'xsessions'))
 
 shell_res = gnome.compile_resources('expidus-shell-resources', 'data/res/shell.gresource.xml',
 	source_dir: 'data/res',

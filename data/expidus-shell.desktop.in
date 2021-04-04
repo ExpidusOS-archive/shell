@@ -1,0 +1,7 @@
+[Desktop Entry]
+Version=1.0
+Name=ExpidusOS Shell
+Comment=The beautiful interface and environment for ExpidusOS
+Exec=@PREFIX@/@BINDIR@/expidus-shell
+Type=Application
+DesktopNames=ExpidusOS Shell

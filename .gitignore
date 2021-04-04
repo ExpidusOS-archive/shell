@@ -100,6 +100,7 @@ expidus-shell.bin
 lib/dbus/*.dart
 *-resources.c
 *-resources.h
+*.desktop
 *-enums.c
 *-enums.h
 *.o
