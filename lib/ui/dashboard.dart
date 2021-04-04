@@ -137,6 +137,16 @@ class _DashboardUIState extends State<DashboardUI> {
     return Scaffold(
         key: _scaffoldKey,
         drawer: Drawer(),
+        onDrawerChanged: (isOpened) {
+          if (!isOpened && startupMode == DashboardUIStartupMode.LEFT_DRAWER) {
+            _channel.invokeMethod('hideDashboard');
+          }
+        },
+        onEndDrawerChanged: (isOpened) {
+          if (!isOpened && startupMode == DashboardUIStartupMode.RIGHT_DRAWER) {
+            _channel.invokeMethod('hideDashboard');
+          }
+        },
         endDrawer: Container(
             width: 360,
             child: new Drawer(

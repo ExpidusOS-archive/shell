@@ -174,6 +174,11 @@ void expidus_shell_hide_dashboard(ExpidusShell* self) {
 
 	gboolean is_opened = priv->dashboards != NULL;
 	if (is_opened) {
+		for (GList* item = priv->dashboards; item != NULL; item = g_list_next(item)) {
+			ExpidusShellBaseDashboard* dashboard = item->data;
+			if (dashboard == NULL || !EXPIDUS_SHELL_IS_BASE_DASHBOARD(dashboard)) continue;
+			gtk_widget_hide(GTK_WIDGET(dashboard));
+		}
 		g_clear_list(&priv->dashboards, g_object_unref);
 	}
 }

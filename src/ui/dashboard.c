@@ -16,6 +16,27 @@ typedef struct {
 } ExpidusShellDashboardPrivate;
 G_DEFINE_TYPE_WITH_PRIVATE(ExpidusShellDashboard, expidus_shell_dashboard, EXPIDUS_SHELL_TYPE_BASE_DASHBOARD);
 
+static void expidus_shell_dashboard_method_handler(FlMethodChannel* channel, FlMethodCall* call, gpointer data) {
+  ExpidusShellDashboard* self = EXPIDUS_SHELL_DASHBOARD(data);
+  GError* error = NULL;
+  if (!g_strcmp0(fl_method_call_get_name(call), "hideDashboard")) {
+    ExpidusShell* shell;
+    g_object_get(self, "shell", &shell, NULL);
+    g_assert(shell);
+
+    expidus_shell_hide_dashboard(shell);
+    if (!fl_method_call_respond_success(call, fl_value_new_null(), &error)) {
+      g_error("Failed to respond to call: %s", error->message);
+      g_clear_error(&error);
+    }
+  } else {
+    if (!fl_method_call_respond(call, FL_METHOD_RESPONSE(fl_method_not_implemented_response_new()), &error)) {
+      g_error("Failed to respond to call: %s", error->message);
+      g_clear_error(&error);
+    }
+  }
+}
+
 static void expidus_shell_dashboard_draw(GtkWidget* widget, cairo_t* cr, gpointer data) {
   ExpidusShellDashboard* self = EXPIDUS_SHELL_DASHBOARD(widget);
   ExpidusShellDashboardPrivate* priv = expidus_shell_dashboard_get_instance_private(self);
@@ -94,6 +115,11 @@ static void expidus_shell_dashboard_constructed(GObject* obj) {
   fl_dart_project_set_dart_entrypoint_arguments(priv->proj, argv);
 
   priv->view = fl_view_new(priv->proj);
+  FlEngine* engine = fl_view_get_engine(priv->view);
+  FlBinaryMessenger* binmsg = fl_engine_get_binary_messenger(engine);
+  priv->channel = fl_method_channel_new(binmsg, "com.expidus.shell/dashboard", FL_METHOD_CODEC(fl_standard_method_codec_new()));
+  fl_method_channel_set_method_call_handler(priv->channel, expidus_shell_dashboard_method_handler, self, NULL);
+
   gtk_widget_set_app_paintable(GTK_WIDGET(priv->view), TRUE);
   gtk_container_add(GTK_CONTAINER(self), GTK_WIDGET(priv->view));
 }
