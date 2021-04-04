@@ -7,6 +7,7 @@ import 'package:flutter/services.dart';
 import 'package:intl/intl.dart';
 import 'package:intl/date_symbol_data_local.dart';
 import 'package:posix/posix.dart';
+import 'package:nm/nm.dart';
 import 'package:shell/dbus/org.freedesktop.Accounts-remote.dart';
 import 'package:shell/dbus/org.freedesktop.Accounts.User-remote.dart';
 
@@ -25,10 +26,18 @@ class DashboardUI extends StatefulWidget {
 class _DashboardUIState extends State<DashboardUI> {
   GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey();
   MethodChannel _channel = MethodChannel('com.expidus.shell/dashboard');
-  DBusClient _dBusClient = DBusClient.system();
   OrgFreedesktopAccounts _accounts = OrgFreedesktopAccounts(
       DBusClient.system(), 'org.freedesktop.Accounts',
       path: DBusObjectPath('/org/freedesktop/Accounts'));
+  NetworkManagerClient _nmClient = NetworkManagerClient(DBusClient.system());
+  var _indicators = {
+    'wifi': true,
+    'cellular': true,
+    'location': false,
+    'bluetooth': false,
+    'notifications': true,
+    'airplane-mode': false
+  };
   String _fullDateTime = '';
 
   final String backgroundPath;
@@ -52,6 +61,15 @@ class _DashboardUIState extends State<DashboardUI> {
                 path: DBusObjectPath(value))
             .getLanguage())
         .then((String lang) => initializeDateFormatting(lang, null));
+
+    _nmClient
+        .connect()
+        .onError(
+            (error, stackTrace) => print('Failed to connect to NM: $error'))
+        .then((nullValue) {
+      this._indicators['wifi'] = _nmClient.wirelessEnabled;
+      this._indicators['cellular'] = _nmClient.wwanEnabled;
+    });
 
     Timer.periodic(
         Duration(seconds: 1),
@@ -94,6 +112,26 @@ class _DashboardUIState extends State<DashboardUI> {
     ]);
   }
 
+  NetworkManagerDevice _findWiFiDevice() {
+    final devs = this._nmClient.allDevices.where((dev) =>
+        dev.wireless != null &&
+        (dev.deviceType == NetworkManagerDeviceType.wifi ||
+            dev.deviceType == NetworkManagerDeviceType.wifi_p2p));
+    return devs.isNotEmpty ? devs.first : null;
+  }
+
+  NetworkManagerDevice _findCellularModem() {
+    final devs = this._nmClient.allDevices.where((dev) =>
+        dev.wireless != null &&
+        (dev.deviceType == NetworkManagerDeviceType.modem));
+    return devs.isNotEmpty ? devs.first : null;
+  }
+
+  List<T> _removeEmpty<T>(List<T> l) {
+    l.removeWhere((element) => element == null);
+    return l;
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -122,23 +160,76 @@ class _DashboardUIState extends State<DashboardUI> {
                       scrollDirection: Axis.horizontal,
                       child: Row(
                           mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                          children: [
+                          children: _removeEmpty<Widget>([
+                            this._findWiFiDevice() != null
+                                ? TextButton(
+                                    child: Icon(_indicators['wifi']
+                                        ? Icons.wifi_outlined
+                                        : Icons.wifi_off_outlined),
+                                    onPressed: () {
+                                      setState(() {
+                                        _indicators['wifi'] =
+                                            !_indicators['wifi'];
+                                        this._nmClient.wirelessEnabled =
+                                            this._indicators['wifi'];
+                                      });
+                                    })
+                                : null,
+                            this._findCellularModem() != null
+                                ? TextButton(
+                                    child: Icon(_indicators['cellular']
+                                        ? Icons.network_cell
+                                        : Icons.signal_cellular_null),
+                                    onPressed: () {
+                                      setState(() {
+                                        _indicators['cellular'] =
+                                            !_indicators['cellular'];
+                                        this._nmClient.wwanEnabled =
+                                            this._indicators['cellular'];
+                                      });
+                                    })
+                                : null,
                             TextButton(
-                                child: Icon(Icons.wifi_off_outlined),
-                                onPressed: () {}),
+                                child: Icon(_indicators['location']
+                                    ? Icons.location_on_outlined
+                                    : Icons.location_off_outlined),
+                                onPressed: () {
+                                  setState(() {
+                                    _indicators['location'] =
+                                        !_indicators['location'];
+                                  });
+                                }),
                             TextButton(
-                                child: Icon(Icons.location_off_outlined),
-                                onPressed: () {}),
+                                child: Icon(_indicators['bluetooth']
+                                    ? Icons.bluetooth_outlined
+                                    : Icons.bluetooth_disabled_outlined),
+                                onPressed: () {
+                                  setState(() {
+                                    _indicators['bluetooth'] =
+                                        !_indicators['bluetooth'];
+                                  });
+                                }),
                             TextButton(
-                                child: Icon(Icons.bluetooth_disabled_outlined),
-                                onPressed: () {}),
+                                child: Icon(_indicators['notifications']
+                                    ? Icons.notifications_on_outlined
+                                    : Icons.notifications_off_outlined),
+                                onPressed: () {
+                                  setState(() {
+                                    _indicators['notifications'] =
+                                        !_indicators['notifications'];
+                                  });
+                                }),
                             TextButton(
-                                child: Icon(Icons.notifications_on_outlined),
-                                onPressed: () {}),
-                            TextButton(
-                                child: Icon(Icons.airplanemode_off_outlined),
-                                onPressed: () {})
-                          ])),
+                                child: Icon(_indicators['airplane-mode']
+                                    ? Icons.airplanemode_on_outlined
+                                    : Icons.airplanemode_off_outlined),
+                                onPressed: () {
+                                  setState(() {
+                                    _indicators['airplane-mode'] =
+                                        !_indicators['airplane-mode'];
+                                  });
+                                })
+                          ]))),
                   const Divider(),
                   Row(
                       mainAxisAlignment: MainAxisAlignment.spaceEvenly,

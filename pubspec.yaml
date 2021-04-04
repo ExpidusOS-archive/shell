@@ -22,8 +22,9 @@ environment:
 
 dependencies:
   intl: ^0.17.0
-  dbus: ^0.3.3
+  dbus: ^0.2.1
   posix: ^2.0.0
+  nm: ^0.0.0-dev.6
   flutter:
     sdk: flutter
 
