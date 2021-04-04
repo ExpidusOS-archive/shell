@@ -1,8 +1,11 @@
+import 'dart:async';
 import 'dart:io';
 
 import 'package:dbus/dbus.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:intl/intl.dart';
+import 'package:intl/date_symbol_data_local.dart';
 import 'package:posix/posix.dart';
 import 'package:shell/dbus/org.freedesktop.Accounts-remote.dart';
 import 'package:shell/dbus/org.freedesktop.Accounts.User-remote.dart';
@@ -26,6 +29,7 @@ class _DashboardUIState extends State<DashboardUI> {
   OrgFreedesktopAccounts _accounts = OrgFreedesktopAccounts(
       DBusClient.system(), 'org.freedesktop.Accounts',
       path: DBusObjectPath('/org/freedesktop/Accounts'));
+  String _fullDateTime = '';
 
   final String backgroundPath;
   final DashboardUIStartupMode startupMode;
@@ -39,6 +43,34 @@ class _DashboardUIState extends State<DashboardUI> {
           ? _scaffoldKey.currentState.openDrawer()
           : _scaffoldKey.currentState.openEndDrawer());
     }
+
+    this
+        ._accounts
+        .callFindUserById(getuid())
+        .then((String value) => OrgFreedesktopAccountsUser(
+                this._accounts.client, 'org.freedesktop.Accounts',
+                path: DBusObjectPath(value))
+            .getLanguage())
+        .then((String lang) => initializeDateFormatting(lang, null));
+
+    Timer.periodic(
+        Duration(seconds: 1),
+        (Timer t) => _getTime().onError(
+            (error, stackTrace) => print('Failed to update the time: $error')));
+  }
+
+  Future<void> _getTime() async {
+    final now = DateTime.now();
+    final user = await this._accounts.callFindUserById(getuid()).then(
+        (String value) => OrgFreedesktopAccountsUser(
+            this._accounts.client, 'org.freedesktop.Accounts',
+            path: DBusObjectPath(value)));
+    final fullDateTime =
+        DateFormat('E MMM d, ', await user.getLanguage()).add_jms().format(now);
+
+    setState(() {
+      _fullDateTime = fullDateTime;
+    });
   }
 
   Future<Widget> createUserWidget() async {
@@ -48,19 +80,18 @@ class _DashboardUIState extends State<DashboardUI> {
             path: DBusObjectPath(value)));
 
     final icon = await user.getIconFile();
-    return DrawerHeader(
-        child: new ListView(children: [
-      Row(mainAxisAlignment: MainAxisAlignment.center, children: [
-        Padding(
-            padding: const EdgeInsets.only(left: 2.0, right: 2.0),
-            child: icon != null
-                ? CircleAvatar(foregroundImage: FileImage(new File(icon)))
-                : CircleAvatar(child: Icon(Icons.person))),
-        Padding(
-            padding: const EdgeInsets.only(left: 2.0, right: 2.0),
-            child: Text(await user.getRealName()))
-      ])
-    ]));
+    final realName = await user.getRealName();
+    final username = await user.getUserName();
+    return Row(mainAxisAlignment: MainAxisAlignment.center, children: [
+      Padding(
+          padding: const EdgeInsets.only(left: 2.0, right: 2.0),
+          child: icon != null
+              ? CircleAvatar(foregroundImage: FileImage(new File(icon)))
+              : CircleAvatar(child: Icon(Icons.person))),
+      Padding(
+          padding: const EdgeInsets.only(left: 2.0, right: 2.0),
+          child: Text(realName == null ? username : realName))
+    ]);
   }
 
   @override
@@ -68,21 +99,78 @@ class _DashboardUIState extends State<DashboardUI> {
     return Scaffold(
         key: _scaffoldKey,
         drawer: Drawer(),
-        endDrawer: new Drawer(
-            child: new ListView(
-          children: [
-            FutureBuilder<Widget>(
-                future: this.createUserWidget(),
-                builder: (BuildContext context, AsyncSnapshot<Widget> data) {
-                  if (data.hasData) {
-                    return data.data;
-                  } else if (data.hasError) {
-                    throw data.error;
-                  }
-                  return CircularProgressIndicator();
-                })
-          ],
-        )),
+        endDrawer: Container(
+            width: 360,
+            child: new Drawer(
+                child: Column(
+              children: [
+                DrawerHeader(
+                    child: new ListView(children: [
+                  FutureBuilder<Widget>(
+                      future: this.createUserWidget(),
+                      builder:
+                          (BuildContext context, AsyncSnapshot<Widget> data) {
+                        if (data.hasData) {
+                          return data.data;
+                        } else if (data.hasError) {
+                          throw data.error;
+                        }
+                        return CircularProgressIndicator();
+                      }),
+                  const Divider(),
+                  SingleChildScrollView(
+                      scrollDirection: Axis.horizontal,
+                      child: Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                          children: [
+                            TextButton(
+                                child: Icon(Icons.wifi_off_outlined),
+                                onPressed: () {}),
+                            TextButton(
+                                child: Icon(Icons.location_off_outlined),
+                                onPressed: () {}),
+                            TextButton(
+                                child: Icon(Icons.bluetooth_disabled_outlined),
+                                onPressed: () {}),
+                            TextButton(
+                                child: Icon(Icons.notifications_on_outlined),
+                                onPressed: () {}),
+                            TextButton(
+                                child: Icon(Icons.airplanemode_off_outlined),
+                                onPressed: () {})
+                          ])),
+                  const Divider(),
+                  Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                      children: [
+                        Row(children: [Icon(Icons.notifications), Text('0')]),
+                        Row(children: [Icon(Icons.battery_std), Text('100%')]),
+                        Row(children: [
+                          Icon(Icons.access_time),
+                          Text(_fullDateTime)
+                        ])
+                      ])
+                ])),
+                Spacer(),
+                Align(
+                    alignment: FractionalOffset.bottomCenter,
+                    child: Column(children: [
+                      const Divider(),
+                      Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                          children: [
+                            TextButton(
+                                child: Icon(Icons.logout), onPressed: () {}),
+                            TextButton(
+                                child: Icon(Icons.lock_outlined),
+                                onPressed: () {}),
+                            TextButton(
+                                child: Icon(Icons.power_off_outlined),
+                                onPressed: () {})
+                          ])
+                    ]))
+              ],
+            ))),
         body: TextButton(
             onPressed: () => _channel.invokeMethod('hideDashboard'),
             child: Container(
