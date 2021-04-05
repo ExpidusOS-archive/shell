@@ -109,8 +109,15 @@ class _DesktopUIState extends State<DesktopUI> {
                           foregroundColor:
                               MaterialStateProperty.all(Theme.of(context).appBarTheme.foregroundColor)),
                       onPressed: () {
-                        _channel.invokeMethod('toggleActionButton').onError(
-                            (error, stackTrace) => print(
+                        _channel
+                            .invokeMethod('toggleActionButton', false)
+                            .onError((error, stackTrace) => print(
+                                'Failed to toggle the action button: $error'));
+                      },
+                      onLongPress: () {
+                        _channel
+                            .invokeMethod('toggleActionButton', true)
+                            .onError((error, stackTrace) => print(
                                 'Failed to toggle the action button: $error'));
                       },
                       child: FittedBox(
