@@ -47,8 +47,8 @@ namespace ExpidusOSShell {
 		}
 
 		[DBus(visible=false)]
-		public void handle_event() {
-			this.compositor.handle_event();
+		public bool handle_event() {
+			return this.compositor.handle_event();
 		}
 	}
 }

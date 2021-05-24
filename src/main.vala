@@ -22,7 +22,8 @@ public static int main(string[] args) {
 
 	try {
 		var shell = new ExpidusOSShell.Shell(backend == null ? "x11" : backend);
-		while (true) shell.handle_event();
+		while (shell.handle_event());
+		return 0;
 	} catch (ExpidusOSShell.ShellErrors e) {
 		stderr.printf("%s: ran into an exception: (%s) %s\n", GLib.Path.get_basename(args[0]), e.domain.to_string(), e.message);
 		return 1;

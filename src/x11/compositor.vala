@@ -77,7 +77,7 @@ namespace ExpidusOSShell.X11 {
 			return this.get_window(xwin);
 		}
 
-		public override void handle_event() {
+		public override bool handle_event() {
 			X.Event ev = {};
 			this.disp.next_event(ref ev);
 			switch (ev.type) {
@@ -92,6 +92,7 @@ namespace ExpidusOSShell.X11 {
 					}
 					break;
 			}
+			return true;
 		}
 	}
 }

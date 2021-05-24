@@ -8,7 +8,7 @@ namespace ExpidusOSShell {
 		public signal void new_window(Window win);
 
 		[DBus(visible = false)]
-		public abstract void handle_event();
+		public abstract bool handle_event();
 
 		[DBus(visible = false)]
 		public abstract void init();
