@@ -4,6 +4,7 @@ namespace ExpidusOSShell.X11 {
 		private Clutter.Stage? _stage;
 
 		private X.Window _xwin;
+		private Gdk.X11.Window _gwin;
 
 		public override ExpidusOSShell.Shell shell {
 			get {
@@ -20,6 +21,12 @@ namespace ExpidusOSShell.X11 {
 			}
 		}
 
+		public override Gdk.Window gwin {
+			get {
+				return this._gwin;
+			}
+		}
+
 		public override Clutter.Stage? stage {
 			get {
 				return this._stage;
@@ -31,6 +38,9 @@ namespace ExpidusOSShell.X11 {
 
 			this._xwin = xwin;
 			this._stage = ClutterX11.get_stage_from_window(xwin);
+
+			var comp = this.shell.compositor as Compositor;
+			this._gwin = Gdk.X11.Window.lookup_for_display(comp.disp_gdk as Gdk.X11.Display, this.xwin);
 		}
 
 		public void set_events(uint mask) {

@@ -30,6 +30,7 @@ shell_sources = []
 if enable_x11
 	shell_sources += ['src/x11/compositor.vala', 'src/x11/window.vala']
 	clutter += [dependency('clutter-x11-1.0')]
+	extra_deps += [dependency('gdk-x11-3.0')]
 	add_project_arguments('-D', 'ENABLE_X11', language: 'vala')
 endif
 

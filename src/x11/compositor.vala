@@ -2,6 +2,7 @@ namespace ExpidusOSShell.X11 {
 	public class Compositor : ExpidusOSShell.Compositor {
 		private ExpidusOSShell.Shell _shell;
 		private X.Display _disp;
+		private Gdk.X11.Display _gdisp;
 
 		private GLib.List<ExpidusOSShell.X11.Window?> windows;
 
@@ -14,28 +15,42 @@ namespace ExpidusOSShell.X11 {
 			}
 		}
 
-		public X.Display disp {
+		public override Gdk.Display disp_gdk {
 			get {
-				return this._disp;
+				return this._gdisp;
 			}
 		}
 
-		public Compositor(ExpidusOSShell.Shell shell) throws ExpidusOSShell.CompositorErrors {
-			Object(shell: shell);
+		public X.Display disp {
+			get {
+				return this._disp == null ? this._gdisp.get_xdisplay() : this._disp;
+			}
+		}
 
-			this._disp = new X.Display();
+		public Compositor(ExpidusOSShell.Shell shell, string? disp_name) throws ExpidusOSShell.CompositorErrors {
+			Object(shell: shell);
+			if (disp_name == null) disp_name = GLib.Environment.get_variable("DISPLAY") != null ? GLib.Environment.get_variable("DISPLAY") : ":0";
+
+			/* TODO: allow the use of a different display name */
+			this._disp = new X.Display(disp_name);
 			if (this.disp == null) {
 				throw new ExpidusOSShell.CompositorErrors.NO_DISPLAY("A connection to the X11 server could not be established");
+			}
+			
+			this._gdisp = Gdk.X11.Display.lookup_for_xdisplay(this.disp);
+			if (this._gdisp == null) {
+				this._gdisp = Gdk.Display.open(disp_name) as Gdk.X11.Display;
+				this._disp = null;
 			}
 
 			this.windows = new GLib.List<ExpidusOSShell.X11.Window?>();
 			ClutterX11.set_display(this.disp);
-
 		}
 
 		public override void init() {
 			var win = this.add_window(this.disp.default_root_window());
 			win.set_events(X.EventMask.SubstructureNotifyMask | X.EventMask.SubstructureRedirectMask);
+			win.gwin.set_events(Gdk.EventMask.ALL_EVENTS_MASK);
 
 			this.disp.grab_server();
 			X.Window root;

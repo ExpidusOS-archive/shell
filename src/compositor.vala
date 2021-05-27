@@ -5,6 +5,9 @@ namespace ExpidusOSShell {
 		public abstract Shell shell { get; set construct; }
 
 		[DBus(visible = false)]
+		public abstract Gdk.Display disp_gdk { get; }
+
+		[DBus(visible = false)]
 		public signal void new_window(Window win);
 
 		[DBus(visible = false)]
