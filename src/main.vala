@@ -21,7 +21,7 @@ public static int main(string[] args) {
 	}
 
 	try {
-		var shell = new ExpidusOSShell.Shell(backend == null ? "x11" : backend);
+		var shell = new ExpidusOSShell.Shell(backend == null ? "x11" : backend, args);
 		while (shell.handle_event());
 		return 0;
 	} catch (ExpidusOSShell.ShellErrors e) {

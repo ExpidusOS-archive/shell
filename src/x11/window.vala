@@ -1,7 +1,7 @@
 namespace ExpidusOSShell.X11 {
 	public class Window : ExpidusOSShell.Window {
 		private ExpidusOSShell.Shell _shell;
-		private Clutter.Stage? _stage;
+		private Clutter.Texture? _texture;
 
 		private X.Window _xwin;
 		private Gdk.X11.Window _gwin;
@@ -27,9 +27,9 @@ namespace ExpidusOSShell.X11 {
 			}
 		}
 
-		public override Clutter.Stage? stage {
+		public override Clutter.Texture? texture {
 			get {
-				return this._stage;
+				return this._texture;
 			}
 		}
 
@@ -37,7 +37,8 @@ namespace ExpidusOSShell.X11 {
 			Object(shell: shell);
 
 			this._xwin = xwin;
-			this._stage = ClutterX11.get_stage_from_window(xwin);
+			this._texture = new ClutterX11.TexturePixmap.with_window(xwin);
+			this.actor.add(this._texture);
 
 			var comp = this.shell.compositor as Compositor;
 			this._gwin = Gdk.X11.Window.lookup_for_display(comp.disp_gdk as Gdk.X11.Display, this.xwin);
@@ -51,6 +52,14 @@ namespace ExpidusOSShell.X11 {
 			X.SetWindowAttributes new_attrs = {};
 			new_attrs.event_mask = attrs.all_event_masks | mask;
 			comp.disp.change_window_attributes(this.xwin, X.CW.EventMask, new_attrs);
+		}
+
+		public override void show() {
+			this.actor.show();
+		}
+
+		public override void hide() {
+			this.actor.hide();
 		}
 	}
 }

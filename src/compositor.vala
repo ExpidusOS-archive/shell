@@ -19,6 +19,7 @@ namespace ExpidusOSShell {
 
 	public errordomain CompositorErrors {
 		NO_DISPLAY,
+		INCOMPATIBLE,
 		ALREADY_MANAGED
 	}
 }

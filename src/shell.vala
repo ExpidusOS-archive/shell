@@ -16,10 +16,10 @@ namespace ExpidusOSShell {
 			}
 		}
 
-		public Shell(string comp) throws ShellErrors, ExpidusOSShell.CompositorErrors, GLib.IOError {
+		public Shell(string comp, string[] args) throws ShellErrors, ExpidusOSShell.CompositorErrors, GLib.IOError {
 #if ENABLE_X11
 			if (comp == "x11") {
-				this._compositor = new ExpidusOSShell.X11.Compositor(this, null);
+				this._compositor = new ExpidusOSShell.X11.Compositor(this, null, args);
 			} else
 #endif
 #if ENABLE_WAYLAND

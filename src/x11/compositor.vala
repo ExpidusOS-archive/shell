@@ -27,11 +27,10 @@ namespace ExpidusOSShell.X11 {
 			}
 		}
 
-		public Compositor(ExpidusOSShell.Shell shell, string? disp_name) throws ExpidusOSShell.CompositorErrors {
+		public Compositor(ExpidusOSShell.Shell shell, string? disp_name, string[] args) throws ExpidusOSShell.CompositorErrors {
 			Object(shell: shell);
 			if (disp_name == null) disp_name = GLib.Environment.get_variable("DISPLAY") != null ? GLib.Environment.get_variable("DISPLAY") : ":0";
 
-			/* TODO: allow the use of a different display name */
 			this._disp = new X.Display(disp_name);
 			if (this.disp == null) {
 				throw new ExpidusOSShell.CompositorErrors.NO_DISPLAY("A connection to the X11 server could not be established");
@@ -44,7 +43,13 @@ namespace ExpidusOSShell.X11 {
 			}
 
 			this.windows = new GLib.List<ExpidusOSShell.X11.Window?>();
+			Clutter.set_windowing_backend("x11");
 			ClutterX11.set_display(this.disp);
+			Clutter.init(ref args);
+
+			if (!ClutterX11.has_composite_extension()) {
+				throw new ExpidusOSShell.CompositorErrors.INCOMPATIBLE("X11 composite extension is required");
+			}
 		}
 
 		public override void init() {
@@ -59,30 +64,24 @@ namespace ExpidusOSShell.X11 {
 			this.disp.query_tree(this.disp.default_root_window(), out root, out parent, out children);
 
 			for (var i = 0; i < children.length; i++) {
-				X.WindowAttributes attrs = {};
-				this.disp.get_window_attributes(children[i], out attrs);
-				if (attrs.override_redirect == false) {
-					this.add_window(children[i]);
-				}
+				this.add_window(children[i]);
 			}
 			this.disp.ungrab_server();
 		}
 
-		private bool has_window(X.Window xwin) {
+		public bool has_window(X.Window xwin) {
 			return this.get_window(xwin) != null;
 		}
 
-		private Window? get_window(X.Window xwin) {
+		public Window? get_window(X.Window xwin) {
 			for (var i = 0; i < this.windows.length(); i++) {
 				var win = this.windows.nth(i).data;
-				var _x = win.xwin;
-				stdout.printf("%lu %lu %d\n", _x, xwin, win.xwin == xwin ? 1 : 0);
 				if (win.xwin == xwin) return win;
 			}
 			return null;
 		}
 
-		private Window add_window(X.Window xwin) {
+		public Window add_window(X.Window xwin) {
 			if (!this.has_window(xwin)) {
 				var win = new Window(this.shell, xwin);
 				this.windows.append(win);
@@ -97,16 +96,23 @@ namespace ExpidusOSShell.X11 {
 			this.disp.next_event(ref ev);
 			switch (ev.type) {
 				case X.EventType.CreateNotify:
-					/* TODO: Fix the five duplicates */
 					{
-						X.WindowAttributes attrs = {};
-						this.disp.get_window_attributes(ev.xcreatewindow.window, out attrs);
-						if (attrs.override_redirect == false && this.has_window(ev.xcreatewindow.window) == false) {
-							this.add_window(ev.xcreatewindow.window);
+						var win = this.get_window(ev.xcreatewindow.window);
+						if (win == null) {
+							win = this.add_window(ev.xcreatewindow.window);
+						}
+					}
+					break;
+				case X.EventType.MapRequest:
+					{
+						var win = this.get_window(ev.xmaprequest.window);
+						if (win != null) {
+							win.show();
 						}
 					}
 					break;
 			}
+			ClutterX11.handle_event(ev);
 			return true;
 		}
 	}
