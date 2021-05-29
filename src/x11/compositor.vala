@@ -45,7 +45,7 @@ namespace ExpidusOSShell.X11 {
 			this.windows = new GLib.List<ExpidusOSShell.X11.Window?>();
 			Clutter.set_windowing_backend("x11");
 			ClutterX11.set_display(this.disp);
-			Clutter.init(ref args);
+			GtkClutter.init(ref args);
 
 			if (!ClutterX11.has_composite_extension()) {
 				throw new ExpidusOSShell.CompositorErrors.INCOMPATIBLE("X11 composite extension is required");
@@ -100,6 +100,14 @@ namespace ExpidusOSShell.X11 {
 						var win = this.get_window(ev.xcreatewindow.window);
 						if (win == null) {
 							win = this.add_window(ev.xcreatewindow.window);
+						}
+					}
+					break;
+				case X.EventType.MapNotify:
+					{
+						var win = this.get_window(ev.xmap.window);
+						if (win != null) {
+							win.show();
 						}
 					}
 					break;

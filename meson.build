@@ -8,7 +8,7 @@ enable_wayland = get_option('enable_wayland')
 
 gtk = [dependency('gtk+-3.0')]
 gio = dependency('gio-2.0')
-clutter = [dependency('clutter-1.0')]
+clutter = [dependency('clutter-1.0'), dependency('clutter-gtk-1.0')]
 extra_deps = []
 
 # Shell executable

@@ -1,29 +1,65 @@
 namespace ExpidusOSShell {
-	public abstract class Window : GLib.Object {
-		public abstract Shell shell { get; set construct; }
-		public abstract Gdk.Window gwin { get; } 
-		public abstract Clutter.Texture? texture { get; }
-
-		private Clutter.Actor _actor;
-
-		public Clutter.Actor actor {
+	public class BaseWindow {
+		private Shell _shell;
+		protected bool framed = false;
+		protected Gtk.Window win_frame;
+		
+		public Shell shell {
 			get {
-				return this._actor;
+				return this._shell;
+			}
+			set {
+				this._shell = value;
 			}
 		}
 
-		Window() {
-			Object();
+		public virtual Gdk.Window gwin { get; } 
+		public virtual Clutter.Texture? texture { get; }
+		public virtual bool managed { get; set; }
+		public virtual bool is_mapped { get; }
+		public virtual int x { get; set; }
+		public virtual int y { get; set; }
+		public virtual int width { get; set; }
+		public virtual int height { get; set; }
 
-			this._actor = new Clutter.Actor();
+		public BaseWindow(Shell shell) {
+			this._shell = shell;
+			this.win_frame = new Gtk.Window();
 		}
 
-		public abstract void show();
-		public abstract void hide();
+		public virtual void show() {
+			if (this.framed) {
+				this.win_frame.show();
+			} else {
+				this.texture.show();
+			}
+		}
+
+		public virtual void hide() {
+			if (this.framed) {
+				this.win_frame.hide();
+			} else {
+				this.texture.hide();
+			}
+		}
 
 		public signal void focus();
 		public signal void unfocus();
 		public signal void map();
 		public signal void unmap();
+
+		public void frame() {
+			if (!this.framed) {
+				this.win_frame.show_all();
+				this.framed = true;
+			}
+		}
+
+		public void unframe() {
+			if (this.framed) {
+				this.win_frame.hide();
+				this.framed = false;
+			}
+		}
 	}
 }

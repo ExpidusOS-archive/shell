@@ -8,7 +8,7 @@ namespace ExpidusOSShell {
 		public abstract Gdk.Display disp_gdk { get; }
 
 		[DBus(visible = false)]
-		public signal void new_window(Window win);
+		public signal void new_window(BaseWindow win);
 
 		[DBus(visible = false)]
 		public abstract bool handle_event();
