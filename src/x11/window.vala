@@ -61,8 +61,10 @@ namespace ExpidusOSShell.X11 {
 				return x;
 			}
 			set {
+				var old_x = this.x;
 				var comp = this.shell.compositor as Compositor;
 				comp.disp.move_window(this.xwin, value, this.y);
+				this.resize(old_x, this.y, value, this.y);
 			}
 		}
 
@@ -74,8 +76,10 @@ namespace ExpidusOSShell.X11 {
 				return y;
 			}
 			set {
+				var old_y = this.y;
 				var comp = this.shell.compositor as Compositor;
 				comp.disp.move_window(this.xwin, this.x, value);
+				this.resize(this.x, old_y, this.x, value);
 			}
 		}
 
@@ -84,7 +88,9 @@ namespace ExpidusOSShell.X11 {
 				return this.gwin.get_width();
 			}
 			set {
+				var old_w = this.width;
 				this.gwin.resize(value, this.height);
+				this.move(old_w, this.height, value, this.height);
 			}
 		}
 
@@ -93,7 +99,9 @@ namespace ExpidusOSShell.X11 {
 				return this.gwin.get_height();
 			}
 			set {
+				var old_h = this.height;
 				this.gwin.resize(this.width, value);
+				this.move(this.width, old_h, this.width, value);
 			}
 		}
 
@@ -110,11 +118,7 @@ namespace ExpidusOSShell.X11 {
 			if (this.xwin != comp.disp.default_root_window()) {
 				if (this.managed) { 
 					this.frame();
-				} else {
-					this.unframe();
 				}
-
-				comp.disp.add_to_save_set(this.xwin);
 			}
 		}
 
@@ -150,6 +154,7 @@ namespace ExpidusOSShell.X11 {
 
 		public override void frame() {
 			if (!this.framed && this.framewin == null) {
+				stdout.printf("Framing %p\n", this);
 				var comp = this.shell.compositor as Compositor;
 				this.framewin = X.create_simple_window(comp.disp, comp.disp.default_root_window(), this.x, this.y, this.width, this.height, 3, 0xff0000, 0x0000ff);
 				comp.disp.reparent_window(this.xwin, this.framewin, 0, 0);
@@ -160,6 +165,7 @@ namespace ExpidusOSShell.X11 {
 
 		public override void unframe() {
 			if (this.framed && this.framewin != null) {
+				stdout.printf("Unframing %p\n", this);
 				var comp = this.shell.compositor as Compositor;
 				comp.disp.reparent_window(this.xwin, comp.disp.default_root_window(), 0, 0);
 				if (this.is_mapped) comp.disp.map_window(this.xwin);

@@ -38,6 +38,7 @@ namespace ExpidusOSShell {
 		public signal void map();
 		public signal void unmap();
 		public signal void resize(int old_width, int old_height, int new_width, int new_height);
+		public signal void move(int old_x, int old_y, int new_x, int new_y);
 
 		public virtual void frame() {
 		}

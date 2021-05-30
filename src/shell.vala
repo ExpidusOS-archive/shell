@@ -37,16 +37,44 @@ namespace ExpidusOSShell {
 			this.conn.register_object("/com/expidus/compositor", this.compositor);
 
 			this.compositor.new_window.connect((win) => {
-				win.map.connect(() => {	
-					/*var monitor = this.compositor.disp_gdk.get_monitor_at_window(win.gwin);
-					stdout.printf("%d, %d %dx%d\n", monitor.workarea.x, monitor.workarea.y, monitor.workarea.width, monitor.workarea.height);
-					if ((win.width + win.x) > monitor.workarea.width) {
+				win.resize.connect((old_width, old_height, new_width, new_height) => {
+					var monitor = this.compositor.disp_gdk.get_monitor_at_point(win.x, win.y);
+					var wx = win.x + new_width;
+					var hy = win.y + new_height;
+
+					if (wx > monitor.workarea.width) {
 						win.width = monitor.workarea.width - win.x;
 					}
 
-					if ((win.height + win.y) > monitor.workarea.height) {
+					if (hy > monitor.workarea.height) {
 						win.height = monitor.workarea.height - win.y;
-					}*/
+					}
+				});
+				win.move.connect((old_x, old_y, new_x, new_y) => {
+					var monitor = this.compositor.disp_gdk.get_monitor_at_point(new_x, new_y);
+					var wx = new_x + win.width;
+					var hy = new_y + win.height;
+
+					if (wx > monitor.workarea.width) {
+						win.width = monitor.workarea.width - new_x;
+					}
+
+					if (hy > monitor.workarea.height) {
+						win.height = monitor.workarea.height - new_y;
+					}
+				});
+				win.map.connect(() => {
+					var monitor = this.compositor.disp_gdk.get_monitor_at_point(win.x, win.y);
+					var wx = win.x + win.width;
+					var hy = win.y + win.height;
+
+					if (wx > monitor.workarea.width) {
+						win.width = monitor.workarea.width - win.x;
+					}
+
+					if (hy > monitor.workarea.height) {
+						win.height = monitor.workarea.height - win.y;
+					}
 				});
 				stdout.printf("A new window has been added: %p\n", win);
 			});

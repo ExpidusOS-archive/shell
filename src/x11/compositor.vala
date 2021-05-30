@@ -93,6 +93,7 @@ namespace ExpidusOSShell.X11 {
 
 		public override bool handle_event() {
 			X.Event ev = {};
+			stdout.printf("Receiving event\n");
 			this.disp.next_event(ref ev);
 			switch (ev.type) {
 				case X.EventType.CreateNotify:
