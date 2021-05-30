@@ -6,6 +6,9 @@ namespace ExpidusOSShell.X11 {
 
 		private GLib.List<ExpidusOSShell.X11.Window?> windows;
 
+		private X.Atom _NET_SUPPORTED;
+		private X.Atom _NET_WM_WINDOW_TYPE;
+
 		public override ExpidusOSShell.Shell shell {
 			get {
 				return this._shell;
@@ -41,6 +44,13 @@ namespace ExpidusOSShell.X11 {
 				this._gdisp = Gdk.Display.open(disp_name) as Gdk.X11.Display;
 				this._disp = null;
 			}
+
+			this._NET_SUPPORTED = this.disp.intern_atom("_NET_SUPPORTED", false);
+			this._NET_WM_WINDOW_TYPE = this.disp.intern_atom("_NET_WM_WINDOW_TYPE", false);
+
+			X.Atom[] supported = new X.Atom[1];
+			supported[0] = this._NET_WM_WINDOW_TYPE;
+			this.disp.change_property(this.disp.default_root_window(), this._NET_SUPPORTED, X.XA_ATOM, 32, X.PropMode.Replace, ((uchar[])supported), supported.length);
 
 			this.windows = new GLib.List<ExpidusOSShell.X11.Window?>();
 			Clutter.set_windowing_backend("x11");

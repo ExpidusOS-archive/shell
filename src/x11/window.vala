@@ -61,6 +61,13 @@ namespace ExpidusOSShell.X11 {
 				return x;
 			}
 			set {
+				var monitor = this.shell.compositor.disp_gdk.get_monitor_at_point(value, this.y);
+
+				var wx = this.width + value;
+				if (wx > monitor.workarea.width) {
+					this.width = monitor.workarea.width - value;
+				}
+
 				var old_x = this.x;
 				var comp = this.shell.compositor as Compositor;
 				comp.disp.move_window(this.xwin, value, this.y);
@@ -76,6 +83,13 @@ namespace ExpidusOSShell.X11 {
 				return y;
 			}
 			set {
+				var monitor = this.shell.compositor.disp_gdk.get_monitor_at_point(this.x, value);
+
+				var hy = this.height + value;
+				if (hy > monitor.workarea.height) {
+					this.height = monitor.workarea.height - value;
+				}
+
 				var old_y = this.y;
 				var comp = this.shell.compositor as Compositor;
 				comp.disp.move_window(this.xwin, this.x, value);
@@ -88,6 +102,13 @@ namespace ExpidusOSShell.X11 {
 				return this.gwin.get_width();
 			}
 			set {
+				var monitor = this.shell.compositor.disp_gdk.get_monitor_at_point(this.x, this.y);
+
+				var wx = value + this.x;
+				if (wx > monitor.workarea.width) {
+					value = monitor.workarea.width - this.x;
+				}
+
 				var old_w = this.width;
 				this.gwin.resize(value, this.height);
 				this.move(old_w, this.height, value, this.height);
@@ -99,6 +120,13 @@ namespace ExpidusOSShell.X11 {
 				return this.gwin.get_height();
 			}
 			set {
+				var monitor = this.shell.compositor.disp_gdk.get_monitor_at_point(this.x, this.y);
+
+				var hy = value + this.y;
+				if (hy > monitor.workarea.height) {
+					value = monitor.workarea.height - this.y;
+				}
+
 				var old_h = this.height;
 				this.gwin.resize(this.width, value);
 				this.move(this.width, old_h, this.width, value);
@@ -139,6 +167,22 @@ namespace ExpidusOSShell.X11 {
 			} else {
 				comp.disp.map_window(this.xwin);
 			}
+
+			var monitor = this.shell.compositor.disp_gdk.get_monitor_at_point(this.x, this.y);
+			var width = this.width;
+			var height = this.height;
+			var wx = width + this.x;
+			var hy = height + this.y;
+
+			if (wx > monitor.workarea.width) {
+				width = monitor.workarea.width - this.x;
+			}
+
+			if (hy > monitor.workarea.height) {
+				height = monitor.workarea.height - this.y;
+			}
+
+			this.gwin.resize(width, height);
 			this.map();
 		}
 
