@@ -3,6 +3,7 @@ namespace ExpidusOSShell.X11 {
 		private Clutter.Texture? _texture;
 
 		private X.Window _xwin;
+		private X.Window? framewin = null;
 		private Gdk.X11.Window _gwin;
 
 		public X.Window xwin {
@@ -104,6 +105,7 @@ namespace ExpidusOSShell.X11 {
 
 			var comp = this.shell.compositor as Compositor;
 			this._gwin = Gdk.X11.Window.lookup_for_display(comp.disp_gdk as Gdk.X11.Display, this.xwin);
+			if (this._gwin == null) this._gwin = new Gdk.X11.Window.foreign_for_display(comp.disp_gdk as Gdk.X11.Display, this.xwin);
 
 			if (this.xwin != comp.disp.default_root_window()) {
 				if (this.managed) { 
@@ -127,11 +129,43 @@ namespace ExpidusOSShell.X11 {
 		}
 
 		public override void show() {
+			var comp = this.shell.compositor as Compositor;
+			if (this.framed && this.framewin != null) {
+				comp.disp.map_window(this.framewin);
+			} else {
+				comp.disp.map_window(this.xwin);
+			}
 			this.map();
 		}
 
 		public override void hide() {
+			var comp = this.shell.compositor as Compositor;
+			if (this.framed && this.framewin != null) {
+				comp.disp.unmap_window(this.framewin);
+			} else {
+				comp.disp.unmap_window(this.xwin);
+			}
 			this.unmap();
+		}
+
+		public override void frame() {
+			if (!this.framed && this.framewin == null) {
+				var comp = this.shell.compositor as Compositor;
+				this.framewin = X.create_simple_window(comp.disp, comp.disp.default_root_window(), this.x, this.y, this.width, this.height, 3, 0xff0000, 0x0000ff);
+				comp.disp.reparent_window(this.xwin, this.framewin, 0, 0);
+				if (this.is_mapped) comp.disp.map_window(this.framewin);
+				this.framed = true;
+			}
+		}
+
+		public override void unframe() {
+			if (this.framed && this.framewin != null) {
+				var comp = this.shell.compositor as Compositor;
+				comp.disp.reparent_window(this.xwin, comp.disp.default_root_window(), 0, 0);
+				if (this.is_mapped) comp.disp.map_window(this.xwin);
+				this.framewin = null;
+				this.framed = false;
+			}
 		}
 	}
 }

@@ -97,8 +97,11 @@ namespace ExpidusOSShell.X11 {
 			switch (ev.type) {
 				case X.EventType.CreateNotify:
 					{
+						X.WindowAttributes attrs = {};
+						this.disp.get_window_attributes(ev.xcreatewindow.window, out attrs);
+
 						var win = this.get_window(ev.xcreatewindow.window);
-						if (win == null) {
+						if (win == null && attrs.override_redirect == false) {
 							win = this.add_window(ev.xcreatewindow.window);
 						}
 					}
@@ -116,6 +119,8 @@ namespace ExpidusOSShell.X11 {
 						var win = this.get_window(ev.xmaprequest.window);
 						if (win != null) {
 							win.show();
+						} else {
+							this.disp.map_window(ev.xmaprequest.window);
 						}
 					}
 					break;

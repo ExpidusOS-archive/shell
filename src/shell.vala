@@ -38,9 +38,9 @@ namespace ExpidusOSShell {
 
 			this.compositor.new_window.connect((win) => {
 				win.map.connect(() => {	
-					var monitor = this.compositor.disp_gdk.get_monitor_at_window(win.gwin);
+					/*var monitor = this.compositor.disp_gdk.get_monitor_at_window(win.gwin);
 					stdout.printf("%d, %d %dx%d\n", monitor.workarea.x, monitor.workarea.y, monitor.workarea.width, monitor.workarea.height);
-					/*if ((win.width + win.x) > monitor.workarea.width) {
+					if ((win.width + win.x) > monitor.workarea.width) {
 						win.width = monitor.workarea.width - win.x;
 					}
 

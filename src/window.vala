@@ -2,7 +2,6 @@ namespace ExpidusOSShell {
 	public class BaseWindow {
 		private Shell _shell;
 		protected bool framed = false;
-		protected Gtk.Window win_frame;
 		
 		public Shell shell {
 			get {
@@ -24,42 +23,26 @@ namespace ExpidusOSShell {
 
 		public BaseWindow(Shell shell) {
 			this._shell = shell;
-			this.win_frame = new Gtk.Window();
 		}
 
 		public virtual void show() {
-			if (this.framed) {
-				this.win_frame.show();
-			} else {
-				this.texture.show();
-			}
+			this.texture.show();
 		}
 
 		public virtual void hide() {
-			if (this.framed) {
-				this.win_frame.hide();
-			} else {
-				this.texture.hide();
-			}
+			this.texture.hide();
 		}
 
 		public signal void focus();
 		public signal void unfocus();
 		public signal void map();
 		public signal void unmap();
+		public signal void resize(int old_width, int old_height, int new_width, int new_height);
 
-		public void frame() {
-			if (!this.framed) {
-				this.win_frame.show_all();
-				this.framed = true;
-			}
+		public virtual void frame() {
 		}
 
-		public void unframe() {
-			if (this.framed) {
-				this.win_frame.hide();
-				this.framed = false;
-			}
+		public virtual void unframe() {
 		}
 	}
 }
