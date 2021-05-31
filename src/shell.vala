@@ -87,6 +87,11 @@ namespace ExpidusOSShell {
 		public signal void monitor_added(int i, GLib.ObjectPath path);
 		public signal void monitor_removed(int i, GLib.ObjectPath path);
 
+		[DBus(visible = false)]
+		public Monitor? get_monitor(int i) {
+			return this.monitors.nth_data(i);
+		}
+
 		private void add_monitor(int i) throws GLib.IOError {
 			if (this.monitors.nth_data(i) == null) {
 				var path = "/com/expidus/shell/monitor/" + i.to_string();

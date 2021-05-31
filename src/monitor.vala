@@ -4,11 +4,19 @@ namespace ExpidusOSShell {
 		private Shell _shell;
 		private int _index;
 		private uint dbus_own_id;
+		private Desktop _desktop;
 
 		[DBus(visible = false)]
 		public Shell shell {
 			get {
 				return this._shell;
+			}
+		}
+
+		[DBus(visible = false)]
+		public Desktop desktop {
+			get {
+				return this._desktop;
 			}
 		}
 
@@ -39,7 +47,7 @@ namespace ExpidusOSShell {
 			this._index = index;
 
 			this.dbus_own_id = this.shell.conn.register_object("/com/expidus/shell/monitor/" + this.index.to_string(), this);
-			stdout.printf("%s %s\n", this.model, this.manufacturer);
+			this._desktop = new Desktop(shell, index);
 		}
 
 		~Monitor() {
