@@ -1,2 +1,0 @@
-option('enable_wayland', type: 'boolean', value: true, description: 'Enable the Wayland compositor')
-option('enable_x11', type: 'boolean', value: true, description: 'Enable the X11 compositor')
