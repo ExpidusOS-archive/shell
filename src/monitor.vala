@@ -20,6 +20,15 @@ namespace ExpidusOSShell {
 			}
 		}
 
+		[DBus(visible = false)]
+		public Gdk.Rectangle geometry {
+			get {
+				var monitor = this.shell.disp.get_monitor(this.index);
+				assert(monitor != null);
+				return monitor.get_geometry();
+			}
+		}
+
 		public int index {
 			get {
 				return this._index;
@@ -52,6 +61,10 @@ namespace ExpidusOSShell {
 
 		~Monitor() {
 			this.shell.conn.unregister_object(this.dbus_own_id);
+		}
+
+		public void update() throws GLib.Error {
+			this.desktop.sync();
 		}
 	}
 }

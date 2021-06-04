@@ -12,6 +12,7 @@ namespace ExpidusOSShell {
 
 		private Gdk.Display _disp;
 		private GLib.List<Monitor> monitors;
+		private GLib.Settings _settings;
 
 		[DBus(visible = false)]
 		public DBusConnection conn {
@@ -24,6 +25,13 @@ namespace ExpidusOSShell {
 		public Gdk.Display disp {
 			get {
 				return this._disp;
+			}
+		}
+
+		[DBus(visible = false)]
+		public GLib.Settings settings {
+			get {
+				return this._settings;
 			}
 		}
 
@@ -44,6 +52,7 @@ namespace ExpidusOSShell {
 			this.conn.register_object("/com/expidus/shell", this);
 
 			this.monitors = new GLib.List<Monitor>();
+			this._settings = new GLib.Settings("com.expidus.shell");
 
 			this._disp = Gdk.Display.get_default();
 			assert(this.disp != null);
@@ -55,16 +64,29 @@ namespace ExpidusOSShell {
 				this.add_monitor(i);
 			}
 
+			screen.size_changed.connect(() => {
+				for (unowned var item = this.monitors.first(); item != null; item = item.next) {
+					var monitor = item.data;
+					try {
+						monitor.update();
+					} catch (GLib.Error e) {
+						stderr.printf("expidus-shell: failed to update monitor: (%s) %s\n", e.domain.to_string(), e.message);
+					}
+				}
+			});
+
 			this.disp.monitor_added.connect((monitor) => {
 				for (var i = 0; i < this.disp.get_n_monitors(); i++) {
-					var mon = this.disp.get_monitor(i);
-					if (mon.get_geometry().equal(monitor.get_geometry())) {
-						try {
-							this.add_monitor(i);
-						} catch (GLib.Error e) {
-							stderr.printf("expidus-shell: failed to add monitor: (%s) %s\n", e.domain.to_string(), e.message);
+					if (monitor.get_geometry().equal(this.disp.get_monitor(i).get_geometry())) {
+						var mon = this.find_monitor(monitor.get_geometry());
+						if (mon != null) {
+							try {
+								this.add_monitor(i);
+							} catch (GLib.Error e) {
+								stderr.printf("expidus-shell: failed to add monitor: (%s) %s\n", e.domain.to_string(), e.message);
+							}
+							break;
 						}
-						break;
 					}
 				}
 			});
@@ -90,6 +112,15 @@ namespace ExpidusOSShell {
 		[DBus(visible = false)]
 		public Monitor? get_monitor(int i) {
 			return this.monitors.nth_data(i);
+		}
+
+		[DBus(visible = false)]
+		public Monitor? find_monitor(Gdk.Rectangle geo) {
+			for (unowned var item = this.monitors.first(); item != null; item = item.next) {
+				var mon = item.data;
+				if (mon.geometry.equal(geo)) return mon;
+			}
+			return null;
 		}
 
 		private void add_monitor(int i) throws GLib.IOError {

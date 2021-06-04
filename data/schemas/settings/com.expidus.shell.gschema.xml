@@ -7,11 +7,11 @@
         Determines how the wallpaper should be drawn on the desktop.
       </description>
     </key>
-    <key name="wallpaper-uri" type="s">
-      <default>'file:///usr/share/backgrounds/expidus/default.png'</default>
-      <summary>Picture URI</summary>
+    <key name="wallpaper-path" type="s">
+      <default>'/usr/share/backgrounds/expidus/default.png'</default>
+      <summary>Wallpaper Path</summary>
       <description>
-        The URI to use when looking for wallpaper.
+        The path to use when looking for wallpaper.
       </description>
     </key>
     <key name="favorite-applications" type="as">
