@@ -58,33 +58,13 @@ namespace ExpidusOSShell {
 			this.move(geo.x, geo.y);
 			this.queue_resize();
 
-			ulong strut_partial[12] = {
-				/* left, right */
-				0, 0,
+			ulong strut[12] = {};
+			strut[2] = geo.y + (int)(geo.height * 0.05);
+			strut[8] = geo.x;
+			strut[9] = geo.x + geo.width - 1;
 
-				/* top, bottom */
-				(geo.y + (int)(geo.height * 0.25)) * monitor.scale_factor, 0,
-
-				/* left_start_y, left_end_y */
-				0, 0,
-
-				/* right_start_y, right_end_y */
-				0, 0,
-
-				/* top_start_x, top_end_x */
-				geo.x * monitor.scale_factor, (geo.x + geo.width) * monitor.scale_factor,
-
-				/* bottom_start_x, bottom_end_x */
-				0, 0
-			};
-
-			ulong strut[4] = {
-				geo.x, geo.x + geo.width,
-				geo.y, geo.y + (int)(geo.height * 0.25)
-			};
-
-			Gdk.property_change(this.get_toplevel().get_window(), _NET_WM_STRUT, CARDINAL, 32, Gdk.PropMode.REPLACE, (uint8[])&strut, strut.length);
-			Gdk.property_change(this.get_toplevel().get_window(), _NET_WM_STRUT_PARTIAL, CARDINAL, 32, Gdk.PropMode.REPLACE, (uint8[])&strut_partial, strut_partial.length);
+			Gdk.property_change(this.get_toplevel().get_window(), _NET_WM_STRUT, CARDINAL, 32, Gdk.PropMode.REPLACE, (uint8[])&strut, 4);
+			Gdk.property_change(this.get_toplevel().get_window(), _NET_WM_STRUT_PARTIAL, CARDINAL, 32, Gdk.PropMode.REPLACE, (uint8[])&strut, 12);
 		}
 	}
 }
