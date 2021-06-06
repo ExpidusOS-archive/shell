@@ -21,5 +21,19 @@
         List of favorited applications, will be pinned on the quick launcher.
       </description>
     </key>
+		<key name="frameless-maximize" type="b">
+			<default>true</default>
+			<summary>Frameless Maximize</summary>
+			<description>
+				Remove window frames when maximized.
+			</description>
+		</key>
+		<key name="scale-factor" type="d">
+			<default>1</default>
+			<summary>Scale Factor</summary>
+			<description>
+				The amount to scale by.
+			</description>
+		</key>
   </schema>
 </schemalist>

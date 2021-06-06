@@ -132,10 +132,12 @@ namespace ExpidusOSShell {
 		private DBusConnection conn;
 		private uint dbus_own_id;
 		private string path;
+		private Shell shell;
 
 		private GLib.List<XfconfChannel> channels;
 
-		public XfconfDaemon() throws GLib.IOError, GLib.Error {
+		public XfconfDaemon(Shell shell) throws GLib.IOError, GLib.Error {
+			this.shell = shell;
 			this.conn = GLib.Bus.get_sync(GLib.BusType.SESSION);
 			this.dbus_own_id = GLib.Bus.own_name_on_connection(this.conn, "org.xfce.Xfconf", GLib.BusNameOwnerFlags.REPLACE);
 			this.conn.register_object("/org/xfce/Xfconf", this);
@@ -199,12 +201,16 @@ namespace ExpidusOSShell {
 			var channel = this.get_channel(channel_name, true, "GetAllProperties");
 			if (channel == null) throw new Xfconf.Error.INVALIDCHANNEL("Channel " + channel_name + " does not exist");
 			var results = channel.get_all(prop_base);
-			if (channel_name == "xfwm4") results.set("/generic/theme", new Variant.string("Tokyo-dark"));
+			if (channel_name == "xfwm4") {
+				results.set("/generic/theme", new Variant.string("Tokyo-dark"));
+				results.set("/generic/titleless_maximize", new Variant.boolean(this.shell.settings.get_boolean("frameless-maximize")));
+			}
 			return results;
 		}
 
 		public Variant GetProperty(string channel_name, string prop_name) throws GLib.Error {
 			if (channel_name == "xfwm4" && prop_name == "/general/theme") return new Variant.string("Tokyo-dark");
+			if (channel_name == "xfwm4" && prop_name == "/general/titleless_maximize") return new Variant.boolean(this.shell.settings.get_boolean("frameless-maximize"));
 			var channel = this.get_channel(channel_name, false, "GetProperty");
 			if (channel == null) throw new Xfconf.Error.INVALIDCHANNEL("Channel " + channel_name + " does not exist");
 			return channel.get_prop(prop_name);
@@ -212,6 +218,7 @@ namespace ExpidusOSShell {
 
 		public bool PropertyExists(string channel_name, string prop_name) throws GLib.Error {
 			if (channel_name == "xfwm4" && prop_name == "/general/theme") return true;
+			if (channel_name == "xfwm4" && prop_name == "/generic/titleless_maximize") return true;
 
 			var channel = this.get_channel(channel_name, true, "PropertyExists");
 			if (channel == null) return false;
@@ -220,6 +227,8 @@ namespace ExpidusOSShell {
 
 		public bool IsPropertyLocked(string channel_name, string prop_name) throws GLib.Error {
 			if (channel_name == "xfwm4" && prop_name == "/general/theme") return true;
+			if (channel_name == "xfwm4" && prop_name == "/generic/titleless_maximize") return true;
+
 			var channel = this.get_channel(channel_name, true, "IsPropertyLocked");
 			if (channel == null) throw new Xfconf.Error.INVALIDCHANNEL("Channel " + channel_name + " does not exist");
 			return channel.is_property_locked(prop_name);
@@ -243,6 +252,8 @@ namespace ExpidusOSShell {
 
 		public void SetProperty(string channel_name, string prop_name, Variant val) throws GLib.Error {
 			if (channel_name == "xfwm4" && prop_name == "/general/theme") throw new Xfconf.Error.PERMISSIONDENIED("Property is locked");
+			if (channel_name == "xfwm4" && prop_name == "/generic/titleless_maximize") throw new Xfconf.Error.PERMISSIONDENIED("Property is locked");
+
 			var channel = this.get_channel(channel_name, false, "SetProperty");
 			channel.set_prop(prop_name, val);
 		}

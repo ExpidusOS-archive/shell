@@ -36,7 +36,8 @@ namespace ExpidusOSShell {
 		}
 
 		public Shell() throws ShellErrors, GLib.IOError, GLib.SpawnError, GLib.Error {
-			this.xfconf = new XfconfDaemon();
+			this._settings = new GLib.Settings("com.expidus.shell");
+			this.xfconf = new XfconfDaemon(this);
 
 			{
 				string args[] = {"xfwm4", "--replace"};
@@ -52,7 +53,6 @@ namespace ExpidusOSShell {
 			this.conn.register_object("/com/expidus/shell", this);
 
 			this.monitors = new GLib.List<Monitor>();
-			this._settings = new GLib.Settings("com.expidus.shell");
 
 			this._disp = Gdk.Display.get_default();
 			assert(this.disp != null);

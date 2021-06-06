@@ -38,6 +38,8 @@ namespace ExpidusOSShell {
 			this.skip_pager_hint = true;
 			this.skip_taskbar_hint = true;
 
+			this._panel = new Panel(this.shell, this._monitor_index);
+
 			var style_ctx = this.get_style_context();
 			style_ctx.add_class("expidus-shell-desktop");
 			style_ctx.add_class("expidus-shell-desktop-n" + this._monitor_index.to_string());
@@ -45,7 +47,7 @@ namespace ExpidusOSShell {
 			this._grid = new Gtk.Grid();
 			this.grid.draw.connect((cr) => {
 				if (this._wallpaper != null) {
-					Gdk.cairo_set_source_pixbuf(cr, this._wallpaper, 0, 0);
+					Gdk.cairo_set_source_pixbuf(cr, this._wallpaper, 0, this.panel.height);
 					cr.paint();
 				}
 				return false;
@@ -58,7 +60,6 @@ namespace ExpidusOSShell {
 			this.move(geo.x, geo.y);
 
 			this.shell.settings.changed["wallpaper-path"].connect(this.update_wallpaper);
-			this._panel = new Panel(this.shell, this._monitor_index);
 		}
 
 		~Desktop() {
@@ -85,6 +86,7 @@ namespace ExpidusOSShell {
 			}
 
 			this.grid.queue_draw();
+			this.queue_draw();
 		}
 	}
 }

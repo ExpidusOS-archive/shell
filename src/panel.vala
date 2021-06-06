@@ -16,7 +16,7 @@ namespace ExpidusOSShell {
 			get {
 				var monitor = this.shell.get_monitor(this._monitor_index);
 				var dpi = monitor == null ? Utils.get_dpi(this.shell, this._monitor_index) : monitor.dpi;
-				return (int)(45 * (dpi / 150));
+				return (int)(45 * (dpi / (150 * this.shell.settings.get_double("scale-factor"))));
 			}
 		}
 
@@ -48,7 +48,6 @@ namespace ExpidusOSShell {
 
 			this.show_all();
 			this.sync();
-			stdout.printf("%d\n", this.height);
 		}
 
 		public override void get_preferred_width(out int min_width, out int nat_width) {
