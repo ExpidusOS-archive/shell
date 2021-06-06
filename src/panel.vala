@@ -7,6 +7,19 @@ namespace ExpidusOSShell {
 		private Shell _shell;
 		private int _monitor_index;
 
+		private Gtk.Box box_left;
+		private Gtk.Box box_center;
+		private Gtk.Box box_right;
+		private Gtk.Box box;
+
+		public int height {
+			get {
+				var monitor = this.shell.get_monitor(this._monitor_index);
+				var dpi = monitor == null ? Utils.get_dpi(this.shell, this._monitor_index) : monitor.dpi;
+				return (int)(45 * (dpi / 150));
+			}
+		}
+
 		public Shell shell {
 			get {
 				return this._shell;
@@ -23,8 +36,19 @@ namespace ExpidusOSShell {
 			this.skip_pager_hint = true;
 			this.skip_taskbar_hint = true;
 
+			this.box = new Gtk.Box(Gtk.Orientation.HORIZONTAL, 0);
+			this.box_left = new Gtk.Box(Gtk.Orientation.HORIZONTAL, 0);
+			this.box_center = new Gtk.Box(Gtk.Orientation.HORIZONTAL, 0);
+			this.box_right = new Gtk.Box(Gtk.Orientation.HORIZONTAL, 0);
+
+			this.box.pack_start(this.box_left);
+			this.box.set_center_widget(this.box_center);
+			this.box.pack_end(this.box_right);
+			this.add(this.box);
+
 			this.show_all();
 			this.sync();
+			stdout.printf("%d\n", this.height);
 		}
 
 		public override void get_preferred_width(out int min_width, out int nat_width) {
@@ -37,8 +61,7 @@ namespace ExpidusOSShell {
 		}
 
 		public override void get_preferred_height(out int min_height, out int nat_height) {
-			var geo = this.shell.disp.get_monitor(this._monitor_index).geometry;
-			min_height = nat_height = (int)(geo.height * 0.05);
+			min_height = nat_height = this.height;
 		}
 
 		public override void get_preferred_height_for_width(int width, out int min_height, out int nat_height) {
@@ -59,7 +82,7 @@ namespace ExpidusOSShell {
 			this.queue_resize();
 
 			ulong strut[12] = {};
-			strut[2] = geo.y + (int)(geo.height * 0.05);
+			strut[2] = geo.y + this.height;
 			strut[8] = geo.x;
 			strut[9] = geo.x + geo.width - 1;
 

@@ -111,7 +111,11 @@ namespace ExpidusOSShell {
 
 		[DBus(visible = false)]
 		public Monitor? get_monitor(int i) {
-			return this.monitors.nth_data(i);
+			for (unowned var item = this.monitors.first(); item != null; item = item.next) {
+				if (i == 0) return item.data;
+				i--;
+			}
+			return null;
 		}
 
 		[DBus(visible = false)]

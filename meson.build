@@ -8,7 +8,9 @@ gio = dependency('gio-2.0')
 clutter = [dependency('clutter-1.0'), dependency('clutter-gtk-1.0')]
 json = [dependency('json-glib-1.0')]
 xfce = [dependency('libxfconf-0')]
-extra_deps = []
+extra_deps = [
+	meson.get_compiler('c').find_library('m', required: true)
+]
 
 # Shell executable
 conf_data = configuration_data()
@@ -27,7 +29,7 @@ shell_res = gnome.compile_resources('expidus-shell-resources', 'data/res/shell.g
 shell_sources = []
 
 add_project_arguments('-DXFCONF_G__ERROR=xfconf_get_error_quark()', language: 'c')
-executable('expidus-shell', [shell_res, shell_sources, 'src/desktop.vala', 'src/main.vala', 'src/monitor.vala', 'src/panel.vala', 'src/shell.vala', 'src/xfconf.vala'],
+executable('expidus-shell', [shell_res, shell_sources, 'src/desktop.vala', 'src/main.vala', 'src/monitor.vala', 'src/panel.vala', 'src/shell.vala', 'src/utils.vala', 'src/xfconf.vala'],
 	install: true,
 	dependencies: [gtk, gio, clutter, json, xfce, extra_deps])
 

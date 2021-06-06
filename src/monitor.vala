@@ -29,6 +29,12 @@ namespace ExpidusOSShell {
 			}
 		}
 
+		public double dpi {
+			get {
+				return Utils.get_dpi(this.shell, this.index);
+			}
+		}
+
 		public int index {
 			get {
 				return this._index;
