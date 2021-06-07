@@ -5,6 +5,7 @@ namespace ExpidusOSShell {
 		private Gtk.Grid _grid;
 		private Gdk.Pixbuf? _wallpaper;
 		private Panel _panel;
+		private StatusPanel _status_panel;
 
 		public Shell shell {
 			get {
@@ -24,6 +25,12 @@ namespace ExpidusOSShell {
 			}
 		}
 
+		public StatusPanel status_panel {
+			get {
+				return this._status_panel;
+			}
+		}
+
 		public Desktop(Shell shell, int monitor) {
 			Object();
 
@@ -39,6 +46,7 @@ namespace ExpidusOSShell {
 			this.skip_taskbar_hint = true;
 
 			this._panel = new Panel(this.shell, this._monitor_index);
+			this._status_panel = new StatusPanel(this.shell, this._monitor_index);
 
 			var style_ctx = this.get_style_context();
 			style_ctx.add_class("expidus-shell-desktop");
@@ -47,7 +55,7 @@ namespace ExpidusOSShell {
 			this._grid = new Gtk.Grid();
 			this.grid.draw.connect((cr) => {
 				if (this._wallpaper != null) {
-					Gdk.cairo_set_source_pixbuf(cr, this._wallpaper, 0, this.panel.height);
+					Gdk.cairo_set_source_pixbuf(cr, this._wallpaper, 0, this.panel.geometry.height);
 					cr.paint();
 				}
 				return false;
@@ -69,7 +77,7 @@ namespace ExpidusOSShell {
 		public void sync() {
 			this.update_size();
 			this.update_wallpaper();
-			this.panel.sync();
+			this.panel.set_strut();
 		}
 
 		public void update_size() {

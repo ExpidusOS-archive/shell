@@ -10,9 +10,17 @@ namespace ExpidusOSShell {
 		private Pid xfwm_pid;
 		private XfconfDaemon xfconf;
 
+		private GLib.MainLoop _main_loop;
 		private Gdk.Display _disp;
 		private GLib.List<Monitor> monitors;
 		private GLib.Settings _settings;
+
+		[DBus(visible = false)]
+		public GLib.MainLoop main_loop {
+			get {
+				return this._main_loop;
+			}
+		}
 
 		[DBus(visible = false)]
 		public DBusConnection conn {
@@ -37,6 +45,7 @@ namespace ExpidusOSShell {
 
 		public Shell() throws ShellErrors, GLib.IOError, GLib.SpawnError, GLib.Error {
 			this._settings = new GLib.Settings("com.expidus.shell");
+			this._main_loop = new GLib.MainLoop();
 			this.xfconf = new XfconfDaemon(this);
 
 			{
@@ -111,11 +120,7 @@ namespace ExpidusOSShell {
 
 		[DBus(visible = false)]
 		public Monitor? get_monitor(int i) {
-			for (unowned var item = this.monitors.first(); item != null; item = item.next) {
-				if (i == 0) return item.data;
-				i--;
-			}
-			return null;
+			return this.monitors.nth_data(i);
 		}
 
 		[DBus(visible = false)]

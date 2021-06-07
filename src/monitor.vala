@@ -29,6 +29,12 @@ namespace ExpidusOSShell {
 			}
 		}
 
+		public bool is_mobile {
+			get {
+				return this.geometry.width < this.geometry.height;
+			}
+		}
+
 		public double dpi {
 			get {
 				return Utils.get_dpi(this.shell, this.index);

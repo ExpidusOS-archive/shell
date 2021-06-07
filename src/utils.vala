@@ -5,4 +5,9 @@ namespace ExpidusOSShell.Utils {
 		var diag_px = GLib.Math.sqrt(GLib.Math.pow(monitor.geometry.width, 2) + GLib.Math.pow(monitor.geometry.height, 2));
 		return diag_px / diag_inch;
 	}
+
+	public static int dpi(ExpidusOSShell.Shell shell, int monitor_index, int v) {
+		var dpi = Utils.get_dpi(shell, monitor_index);
+		return (int)(v * (dpi / (150 * shell.settings.get_double("scale-factor"))));
+	}
 }
