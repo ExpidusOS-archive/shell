@@ -29,7 +29,7 @@ namespace ExpidusOSShell {
 			}
 		}
 
-		public Panel(Shell shell, int monitor_index) {
+		public Panel(Shell shell, Desktop desktop, int monitor_index) {
 			Object(shell: shell, monitor_index: monitor_index);
 
 			var style_ctx = this.get_style_context();
@@ -57,28 +57,22 @@ namespace ExpidusOSShell {
 			this.box_right.pack_end(this.clock, false, false);
 
 			this.clock.enter_notify_event.connect((ev) => {
-				var monitor = this.shell.get_monitor(this.monitor_index);
-				assert(monitor != null);
-				monitor.desktop.status_panel.mode = SidePanelMode.PREVIEW;
+				desktop.status_panel.mode = SidePanelMode.PREVIEW;
 				return false;
 			});
 
 			this.clock.leave_notify_event.connect((ev) => {
-				var monitor = this.shell.get_monitor(this.monitor_index);
-				assert(monitor != null);
-				if (monitor.desktop.status_panel.mode == SidePanelMode.PREVIEW) {
-					monitor.desktop.status_panel.mode = SidePanelMode.CLOSED;
+				if (desktop.status_panel.mode == SidePanelMode.PREVIEW) {
+					desktop.status_panel.mode = SidePanelMode.CLOSED;
 				}
 				return false;
 			});
 
 			this.clock.clicked.connect(() => {
-				var monitor = this.shell.get_monitor(this.monitor_index);
-				assert(monitor != null);
-				if (monitor.desktop.status_panel.mode == SidePanelMode.OPEN) {
-					monitor.desktop.status_panel.mode = SidePanelMode.CLOSED;
+				if (desktop.status_panel.mode == SidePanelMode.OPEN) {
+					desktop.status_panel.mode = SidePanelMode.CLOSED;
 				} else {
-					monitor.desktop.status_panel.mode = SidePanelMode.OPEN;
+					desktop.status_panel.mode = SidePanelMode.OPEN;
 				}
 			});
 

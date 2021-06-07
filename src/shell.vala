@@ -46,7 +46,11 @@ namespace ExpidusOSShell {
 		public Shell() throws ShellErrors, GLib.IOError, GLib.SpawnError, GLib.Error {
 			this._settings = new GLib.Settings("com.expidus.shell");
 			this._main_loop = new GLib.MainLoop();
+			this._conn = GLib.Bus.get_sync(BusType.SESSION);
 			this.xfconf = new XfconfDaemon(this);
+
+			this._disp = Gdk.Display.get_default();
+			assert(this.disp != null);
 
 			{
 				string args[] = {"xfwm4", "--replace"};
@@ -57,14 +61,15 @@ namespace ExpidusOSShell {
 				});
 			}
 
-			this._conn = GLib.Bus.get_sync(BusType.SESSION);
+			List<StartupWindow> startup_windows = new GLib.List<StartupWindow>();
+			for (var i = 0; i < this.disp.get_n_monitors(); i++) {
+				startup_windows.append(new StartupWindow(this, i));
+			}
+
 			this.dbus_own_id = GLib.Bus.own_name_on_connection(this.conn, "com.expidus.Shell", GLib.BusNameOwnerFlags.NONE);
 			this.conn.register_object("/com/expidus/shell", this);
 
 			this.monitors = new GLib.List<Monitor>();
-
-			this._disp = Gdk.Display.get_default();
-			assert(this.disp != null);
 
 			var screen = this.disp.get_default_screen();
 			assert(screen != null);
@@ -109,6 +114,19 @@ namespace ExpidusOSShell {
 					}
 				}
 			});
+
+      GLib.TimeoutSource timeout = new GLib.TimeoutSource.seconds(10);
+      timeout.set_callback(() => {
+        timeout.destroy();
+        for (unowned var item = startup_windows.first(); item != null; item = item.next) {
+					var startup_win = item.data;
+					startup_win.hide();
+          startup_windows.remove(startup_win);
+        }
+				this.disp.get_default_seat().ungrab();
+				return false;
+      });
+      timeout.attach(this.main_loop.get_context());
 		}
 
 		~Shell() {

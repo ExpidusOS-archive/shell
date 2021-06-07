@@ -29,7 +29,7 @@ shell_res = gnome.compile_resources('expidus-shell-resources', 'data/res/shell.g
 shell_sources = []
 
 add_project_arguments('-DXFCONF_G__ERROR=xfconf_get_error_quark()', language: 'c')
-executable('expidus-shell', [shell_res, shell_sources, 'src/widgets/base-panel.vala', 'src/widgets/desktop.vala', 'src/widgets/panel.vala', 'src/widgets/side-panel.vala', 'src/widgets/status-area.vala', 'src/widgets/status-panel.vala',
+executable('expidus-shell', [shell_res, shell_sources, 'src/widgets/base-panel.vala', 'src/widgets/desktop.vala', 'src/widgets/panel.vala', 'src/widgets/side-panel.vala', 'src/widgets/startup-window.vala', 'src/widgets/status-area.vala', 'src/widgets/status-panel.vala',
 	'src/main.vala', 'src/monitor.vala', 'src/shell.vala', 'src/utils.vala', 'src/xfconf.vala'],
 	install: true,
 	dependencies: [gtk, gio, clutter, json, xfce, extra_deps])

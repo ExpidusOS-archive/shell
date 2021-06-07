@@ -45,8 +45,8 @@ namespace ExpidusOSShell {
 			this.skip_pager_hint = true;
 			this.skip_taskbar_hint = true;
 
-			this._panel = new Panel(this.shell, this._monitor_index);
 			this._status_panel = new StatusPanel(this.shell, this._monitor_index);
+			this._panel = new Panel(this.shell, this, this._monitor_index);
 
 			var style_ctx = this.get_style_context();
 			style_ctx.add_class("expidus-shell-desktop");
