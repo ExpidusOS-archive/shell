@@ -17,7 +17,41 @@ namespace ExpidusOSShell {
 			}
 			set {
 				this._mode = value;
-				this.show_all();
+
+				var monitor = this.shell.disp.get_monitor(this.monitor_index);
+				var panel_height = Utils.dpi(this.shell, this.monitor_index, 45);
+				var size = 0;
+				switch (this.mode) {
+					case SidePanelMode.CLOSED:
+						break;
+					case SidePanelMode.PREVIEW:
+						size = this.preview_size;
+						break;
+					case SidePanelMode.OPEN:
+						size = this.open_size;
+						break;
+				}
+
+				switch (this.side) {
+					case PanelSide.LEFT:
+					case PanelSide.RIGHT:
+						if (size == 0) this.hide();
+						else {
+							this.show_all();
+							this.resize(size, monitor.geometry.height - panel_height);
+						}
+						break;
+					case PanelSide.TOP:
+					case PanelSide.BOTTOM:
+						if (size == 0) this.hide();
+						else {
+							this.show_all();
+							this.resize(monitor.geometry.width, size);
+						}
+						break;
+				}
+
+				this.queue_resize();
 			}
 		}
 

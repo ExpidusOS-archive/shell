@@ -5,12 +5,13 @@ The default desktop environment on ExpidusOS is called ExpidusOS Shell. This rep
 ## Requirements
 
 ### Dependencies
-* `accountsservice` (runtime)
-* `NetworkManager` (runtime)
-* `mutter-7` (runtime, compiling)
-* `meson` (host)
-* (dart) [`dbus`](https://pub.dev/packages/dbus)^0.2.1 (host)
-* Flutter SDK (host)
+* XFCE 4 Window Manager
+* `gio-2.0`
+* `gtk+-3.0`
+* `json-glib-1.0`
+* `libxfconf`
+* valac (host)
+Make sure any dependency listed with the code blocks have their GObject Introspection and/or vapi bindings generated and installed.
 
 ### Hardware
 * Dedicated GPU: **recommended**
@@ -19,4 +20,4 @@ The default desktop environment on ExpidusOS is called ExpidusOS Shell. This rep
 
 ## Building & Installing
 
-ExpidusOS Shell installs and builds just like any other meson project, however it requires the dbus package from dart to be installed along side the Flutter SDK. Without the dbus package, meson will not be able to generate the DBus object files which are necessary to make the Dart code run. Flutter's SDK is required as it builds the Dart code that uses Flutter for the shell. It is recommended to set the prefix to `/usr` when configuring the project with meson. Running the shell is easy, you can use any display manager like GDM or LightDM. It is also possible to use Xephyr to test the shell. Before running the shell, make sure Network Manager and the account service for DBus is running.
+ExpidusOS Shell installs and builds just like any other meson project, however it requires the Vala compiler.

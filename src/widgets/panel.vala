@@ -66,14 +66,20 @@ namespace ExpidusOSShell {
 			this.clock.leave_notify_event.connect((ev) => {
 				var monitor = this.shell.get_monitor(this.monitor_index);
 				assert(monitor != null);
-				monitor.desktop.status_panel.mode = SidePanelMode.CLOSED;
+				if (monitor.desktop.status_panel.mode == SidePanelMode.PREVIEW) {
+					monitor.desktop.status_panel.mode = SidePanelMode.CLOSED;
+				}
 				return false;
 			});
 
 			this.clock.clicked.connect(() => {
 				var monitor = this.shell.get_monitor(this.monitor_index);
 				assert(monitor != null);
-				monitor.desktop.status_panel.mode = SidePanelMode.OPEN;
+				if (monitor.desktop.status_panel.mode == SidePanelMode.OPEN) {
+					monitor.desktop.status_panel.mode = SidePanelMode.CLOSED;
+				} else {
+					monitor.desktop.status_panel.mode = SidePanelMode.OPEN;
+				}
 			});
 
 			this.clock_timer = new GLib.TimeoutSource(1000);
