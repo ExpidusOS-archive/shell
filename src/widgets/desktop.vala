@@ -6,6 +6,7 @@ namespace ExpidusOSShell {
 		private Gdk.Pixbuf? _wallpaper;
 		private Panel _panel;
 		private StatusPanel _status_panel;
+		private Monitor _monitor;
 
 		public Shell shell {
 			get {
@@ -31,11 +32,18 @@ namespace ExpidusOSShell {
 			}
 		}
 
-		public Desktop(Shell shell, int monitor) {
+		public Monitor monitor {
+			get {
+				return this._monitor;
+			}
+		}
+
+		public Desktop(Shell shell, Monitor monitor, int monitor_index) {
 			Object();
 
 			this._shell = shell;
-			this._monitor_index = monitor;
+			this._monitor = monitor;
+			this._monitor_index = monitor_index;
 
 			var geo = this.shell.disp.get_monitor(this._monitor_index).geometry;
 			this.set_default_size(geo.width, geo.height);
@@ -45,7 +53,7 @@ namespace ExpidusOSShell {
 			this.skip_pager_hint = true;
 			this.skip_taskbar_hint = true;
 
-			this._status_panel = new StatusPanel(this.shell, this._monitor_index);
+			this._status_panel = new StatusPanel(this.shell, this, this._monitor_index);
 			this._panel = new Panel(this.shell, this, this._monitor_index);
 
 			var style_ctx = this.get_style_context();

@@ -1,5 +1,6 @@
 <gresources>
   <gresource prefix="/com/expidus/shell">
 		<file>logo.png</file>
+		<file>style.css</file>
   </gresource>
 </gresources>

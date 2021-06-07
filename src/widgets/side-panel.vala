@@ -23,7 +23,6 @@ namespace ExpidusOSShell {
 				var size = 0;
 				switch (this.mode) {
 					case SidePanelMode.CLOSED:
-						this.get_window().set_shadow_width(0, 0, 0, 0);
 						break;
 					case SidePanelMode.PREVIEW:
 						size = this.preview_size;
@@ -35,55 +34,19 @@ namespace ExpidusOSShell {
 
 				switch (this.side) {
 					case PanelSide.LEFT:
-						if (size == 0) this.hide();
-						else {
-							this.show_all();
-							this.resize(size, monitor.geometry.height - panel_height);
-						}
-
-						if (this.mode == SidePanelMode.PREVIEW) {
-							this.get_window().set_shadow_width(0, 10, 0, 0);
-						} else if (this.mode == SidePanelMode.OPEN) {
-							this.get_window().set_shadow_width(0, monitor.geometry.width - size, 0, 0);
-						}
-						break;
 					case PanelSide.RIGHT:
 						if (size == 0) this.hide();
 						else {
 							this.show_all();
 							this.resize(size, monitor.geometry.height - panel_height);
 						}
-
-						if (this.mode == SidePanelMode.PREVIEW) {
-							this.get_window().set_shadow_width(10, 0, 0, 0);
-						} else if (this.mode == SidePanelMode.OPEN) {
-							this.get_window().set_shadow_width(monitor.geometry.width - size, 0, 0, 0);
-						}
 						break;
 					case PanelSide.TOP:
-						if (size == 0) this.hide();
-						else {
-							this.show_all();
-							this.resize(monitor.geometry.width, size);
-						}
-
-						if (this.mode == SidePanelMode.PREVIEW) {
-							this.get_window().set_shadow_width(0, 0, 0, 10);
-						} else if (this.mode == SidePanelMode.OPEN) {
-							this.get_window().set_shadow_width(0, 0, 0, monitor.geometry.height - size);
-						}
-						break;
 					case PanelSide.BOTTOM:
 						if (size == 0) this.hide();
 						else {
 							this.show_all();
 							this.resize(monitor.geometry.width, size);
-						}
-
-						if (this.mode == SidePanelMode.PREVIEW) {
-							this.get_window().set_shadow_width(0, 0, 10, 0);
-						} else if (this.mode == SidePanelMode.OPEN) {
-							this.get_window().set_shadow_width(0, 0, monitor.geometry.height - size, 0);
 						}
 						break;
 				}
@@ -129,7 +92,7 @@ namespace ExpidusOSShell {
 						break;
 					case PanelSide.TOP:
 						geo.x = monitor.geometry.x;
-						geo.y = monitor.geometry.y - panel_height;
+						geo.y = monitor.geometry.y + panel_height;
 						geo.width = monitor.geometry.width;
 						geo.height = size;
 						break;
@@ -143,6 +106,17 @@ namespace ExpidusOSShell {
 
 				return geo;
 			}
+		}
+
+		construct {
+			this.add_events(Gdk.EventMask.ALL_EVENTS_MASK);
+			this.notify.connect((s, p) => {
+				if (p.name == "is-active") this.focus_changed();
+			});
+		}
+
+		private void focus_changed() {
+			if (!this.is_active) this.mode = SidePanelMode.CLOSED;
 		}
 	}
 }

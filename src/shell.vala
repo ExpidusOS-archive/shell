@@ -9,6 +9,7 @@ namespace ExpidusOSShell {
 		private uint dbus_own_id;
 		private Pid xfwm_pid;
 		private XfconfDaemon xfconf;
+		private Wnck.Screen _wnck_screen;
 
 		private GLib.MainLoop _main_loop;
 		private Gdk.Display _disp;
@@ -30,6 +31,13 @@ namespace ExpidusOSShell {
 		}
 
 		[DBus(visible = false)]
+		public Wnck.Screen wnck_screen {
+			get {
+				return this._wnck_screen;
+			}
+		}
+
+		[DBus(visible = false)]
 		public Gdk.Display disp {
 			get {
 				return this._disp;
@@ -47,6 +55,7 @@ namespace ExpidusOSShell {
 			this._settings = new GLib.Settings("com.expidus.shell");
 			this._main_loop = new GLib.MainLoop();
 			this._conn = GLib.Bus.get_sync(BusType.SESSION);
+			this._wnck_screen = Wnck.Screen.get_default();
 			this.xfconf = new XfconfDaemon(this);
 
 			this._disp = Gdk.Display.get_default();
@@ -73,6 +82,10 @@ namespace ExpidusOSShell {
 
 			var screen = this.disp.get_default_screen();
 			assert(screen != null);
+
+			var provider = new Gtk.CssProvider();
+			provider.load_from_resource("/com/expidus/shell/style.css");
+			Gtk.StyleContext.add_provider_for_screen(screen, provider, Gtk.STYLE_PROVIDER_PRIORITY_APPLICATION);
 
 			for (var i = 0; i < this.disp.get_n_monitors(); i++) {
 				this.add_monitor(i);
@@ -123,10 +136,22 @@ namespace ExpidusOSShell {
 					startup_win.hide();
           startup_windows.remove(startup_win);
         }
-				this.disp.get_default_seat().ungrab();
 				return false;
       });
       timeout.attach(this.main_loop.get_context());
+
+			this.wnck_screen.active_window_changed.connect((_prev_win) => {
+				if (_prev_win != null) {
+					var prev_win = Gdk.X11.Window.lookup_for_display(this.disp as Gdk.X11.Display, _prev_win.get_xid());
+					if (prev_win == null) prev_win = new Gdk.X11.Window.foreign_for_display(this.disp as Gdk.X11.Display, _prev_win.get_xid());
+
+					var gdk_monitor = this.disp.get_monitor_at_window(prev_win);
+					assert(gdk_monitor != null);
+
+					stdout.printf("%d, %d\n", gdk_monitor.geometry.x, gdk_monitor.geometry.y);
+					var monitor = this.find_monitor(gdk_monitor.geometry);
+				}
+			});
 		}
 
 		~Shell() {
@@ -145,7 +170,7 @@ namespace ExpidusOSShell {
 		public Monitor? find_monitor(Gdk.Rectangle geo) {
 			for (unowned var item = this.monitors.first(); item != null; item = item.next) {
 				var mon = item.data;
-				if (mon.geometry.equal(geo)) return mon;
+				if (mon.geometry.x == geo.x && mon.geometry.y == geo.y) return mon;
 			}
 			return null;
 		}

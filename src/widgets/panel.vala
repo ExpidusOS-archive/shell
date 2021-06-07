@@ -49,32 +49,54 @@ namespace ExpidusOSShell {
 			this.box.pack_start(this.box_left, false, false);
 			this.box.set_center_widget(this.box_center);
 			this.box.pack_end(this.box_right, false, false);
+
 			this.add(this.box);
+
+			this.event.connect((ev) => {
+				switch (ev.type) {
+					case Gdk.EventType.BUTTON_RELEASE:
+					case Gdk.EventType.TOUCH_END:
+						if (desktop.monitor.is_mobile) {	
+							if (desktop.status_panel.mode == SidePanelMode.OPEN) {
+								desktop.status_panel.mode = SidePanelMode.CLOSED;
+							} else {
+								desktop.status_panel.mode = SidePanelMode.OPEN;
+							}
+						}
+						return true;
+					default:
+						break;
+				}
+				return false;
+			});
 
 			this.clock = new Gtk.Button.with_label("00:00 AM");
 			style_ctx = this.clock.get_style_context();
 			style_ctx.add_class("expidus-shell-panel-clock");
+			style_ctx.add_class("expidus-shell-panel-button");
 			this.box_right.pack_end(this.clock, false, false);
 
-			this.clock.enter_notify_event.connect((ev) => {
-				desktop.status_panel.mode = SidePanelMode.PREVIEW;
-				return false;
-			});
+			if (!desktop.monitor.is_mobile) {
+				this.clock.enter_notify_event.connect((ev) => {
+					desktop.status_panel.mode = SidePanelMode.PREVIEW;
+					return false;
+				});
 
-			this.clock.leave_notify_event.connect((ev) => {
-				if (desktop.status_panel.mode == SidePanelMode.PREVIEW) {
-					desktop.status_panel.mode = SidePanelMode.CLOSED;
-				}
-				return false;
-			});
+				this.clock.leave_notify_event.connect((ev) => {
+					if (desktop.status_panel.mode == SidePanelMode.PREVIEW) {
+						desktop.status_panel.mode = SidePanelMode.CLOSED;
+					}
+					return false;
+				});
 
-			this.clock.clicked.connect(() => {
-				if (desktop.status_panel.mode == SidePanelMode.OPEN) {
-					desktop.status_panel.mode = SidePanelMode.CLOSED;
-				} else {
-					desktop.status_panel.mode = SidePanelMode.OPEN;
-				}
-			});
+				this.clock.clicked.connect(() => {
+					if (desktop.status_panel.mode == SidePanelMode.OPEN) {
+						desktop.status_panel.mode = SidePanelMode.CLOSED;
+					} else {
+						desktop.status_panel.mode = SidePanelMode.OPEN;
+					}
+				});
+			}
 
 			this.clock_timer = new GLib.TimeoutSource(1000);
 			this.clock_timer.set_callback(() => {

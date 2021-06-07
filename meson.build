@@ -3,12 +3,12 @@ project('expidus-shell', 'vala', 'c', license: 'GPL-3.0-only', version: '0.1.0-p
 gnome = import('gnome')
 fs = import('fs')
 
-gtk = [dependency('gtk+-3.0')]
+gtk = [dependency('gtk+-3.0'), dependency('gdk-x11-3.0')]
 gio = dependency('gio-2.0')
-clutter = [dependency('clutter-1.0'), dependency('clutter-gtk-1.0')]
 json = [dependency('json-glib-1.0')]
 xfce = [dependency('libxfconf-0')]
 extra_deps = [
+	dependency('libwnck-3.0'),
 	meson.get_compiler('c').find_library('m', required: true)
 ]
 
@@ -28,11 +28,11 @@ shell_res = gnome.compile_resources('expidus-shell-resources', 'data/res/shell.g
 
 shell_sources = []
 
-add_project_arguments('-DXFCONF_G__ERROR=xfconf_get_error_quark()', language: 'c')
+add_project_arguments('-DXFCONF_G__ERROR=xfconf_get_error_quark()', '-DWNCK_WINDOW_H=1', language: 'c')
 executable('expidus-shell', [shell_res, shell_sources, 'src/widgets/base-panel.vala', 'src/widgets/desktop.vala', 'src/widgets/panel.vala', 'src/widgets/side-panel.vala', 'src/widgets/startup-window.vala', 'src/widgets/status-area.vala', 'src/widgets/status-panel.vala',
 	'src/main.vala', 'src/monitor.vala', 'src/shell.vala', 'src/utils.vala', 'src/xfconf.vala'],
 	install: true,
-	dependencies: [gtk, gio, clutter, json, xfce, extra_deps])
+	dependencies: [gtk, gio, json, xfce, extra_deps])
 
 # Wallpaper & more
 install_subdir('data/wallpaper',

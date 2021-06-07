@@ -68,7 +68,7 @@ namespace ExpidusOSShell {
 			this._index = index;
 
 			this.dbus_own_id = this.shell.conn.register_object("/com/expidus/shell/monitor/" + this.index.to_string(), this);
-			this._desktop = new Desktop(shell, index);
+			this._desktop = new Desktop(shell, this, index);
 		}
 
 		~Monitor() {
