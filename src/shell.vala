@@ -139,19 +139,6 @@ namespace ExpidusOSShell {
 				return false;
       });
       timeout.attach(this.main_loop.get_context());
-
-			this.wnck_screen.active_window_changed.connect((_prev_win) => {
-				if (_prev_win != null) {
-					var prev_win = Gdk.X11.Window.lookup_for_display(this.disp as Gdk.X11.Display, _prev_win.get_xid());
-					if (prev_win == null) prev_win = new Gdk.X11.Window.foreign_for_display(this.disp as Gdk.X11.Display, _prev_win.get_xid());
-
-					var gdk_monitor = this.disp.get_monitor_at_window(prev_win);
-					assert(gdk_monitor != null);
-
-					stdout.printf("%d, %d\n", gdk_monitor.geometry.x, gdk_monitor.geometry.y);
-					var monitor = this.find_monitor(gdk_monitor.geometry);
-				}
-			});
 		}
 
 		~Shell() {

@@ -110,13 +110,12 @@ namespace ExpidusOSShell {
 
 		construct {
 			this.add_events(Gdk.EventMask.ALL_EVENTS_MASK);
-			this.notify.connect((s, p) => {
-				if (p.name == "is-active") this.focus_changed();
+			this.event.connect((ev) => {
+				if (ev.type == Gdk.EventType.LEAVE_NOTIFY) {
+					this.mode = SidePanelMode.CLOSED;
+				}
+				return false;
 			});
-		}
-
-		private void focus_changed() {
-			if (!this.is_active) this.mode = SidePanelMode.CLOSED;
 		}
 	}
 }
