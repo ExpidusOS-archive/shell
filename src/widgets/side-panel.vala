@@ -6,10 +6,31 @@ namespace ExpidusOSShell {
 	}
 
 	public abstract class SidePanel : BasePanel {
+		private Gtk.Stack stack;
 		private SidePanelMode _mode = SidePanelMode.CLOSED;
+		private Gtk.Widget _widget_preview;
+		private Gtk.Widget _widget_full;
 
 		public int preview_size = 50;
 		public int open_size = 250;
+
+		public Gtk.Widget widget_preview {
+			get {
+				return this._widget_preview;
+			}
+			set construct {
+				this._widget_preview = value;
+			}
+		}
+
+		public Gtk.Widget widget_full {
+			get {
+				return this._widget_full;
+			}
+			set construct {
+				this._widget_full = value;
+			}
+		}
 
 		public SidePanelMode mode {
 			get {
@@ -71,9 +92,11 @@ namespace ExpidusOSShell {
 						break;
 					case SidePanelMode.PREVIEW:
 						size = this.preview_size;
+						this.stack.visible_child_name = "preview";
 						break;
 					case SidePanelMode.OPEN:
 						size = this.open_size;
+						this.stack.visible_child_name = "full";
 						break;
 				}
 
@@ -110,6 +133,12 @@ namespace ExpidusOSShell {
 
 		construct {
 			this.add_events(Gdk.EventMask.ALL_EVENTS_MASK);
+
+			this.stack = new Gtk.Stack();
+			this.stack.add_named(this.widget_preview, "preview");
+			this.stack.add_named(this.widget_full, "full");
+			this.add(this.stack);
+
 			this.event.connect((ev) => {
 				if (ev.type == Gdk.EventType.LEAVE_NOTIFY) {
 					this.mode = SidePanelMode.CLOSED;

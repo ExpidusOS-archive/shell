@@ -9,11 +9,9 @@ namespace ExpidusOSShell {
 		}
 
 		public StatusPanel(Shell shell, Desktop desktop, int monitor_index) {
-			Object(shell: shell, monitor_index: monitor_index);
+			Object(shell: shell, monitor_index: monitor_index, widget_preview: new StatusAreaPreview(shell, desktop), widget_full: new StatusArea(shell, desktop));
 
 			this._desktop = desktop;
-
-			this.add(new StatusArea(shell));
 		}
 	}
 }

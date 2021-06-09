@@ -10,7 +10,6 @@ The default desktop environment on ExpidusOS is called ExpidusOS Shell. This rep
 * `gtk+-3.0`
 * `json-glib-1.0`
 * `libxfconf`
-* `libwnck-3.0`
 * valac (host)
 
 Make sure any dependency listed with the code blocks have their GObject Introspection and/or vapi bindings generated and installed.

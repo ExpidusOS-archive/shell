@@ -9,12 +9,19 @@ namespace ExpidusOSShell {
 		private uint dbus_own_id;
 		private Pid xfwm_pid;
 		private XfconfDaemon xfconf;
-		private Wnck.Screen _wnck_screen;
 
 		private GLib.MainLoop _main_loop;
 		private Gdk.Display _disp;
 		private GLib.List<Monitor> monitors;
 		private GLib.Settings _settings;
+		private NotificationsDaemon _notifs;
+
+		[DBus(visible = false)]
+		public NotificationsDaemon notifs {
+			get {
+				return this._notifs;
+			}
+		}
 
 		[DBus(visible = false)]
 		public GLib.MainLoop main_loop {
@@ -27,13 +34,6 @@ namespace ExpidusOSShell {
 		public DBusConnection conn {
 			get {
 				return this._conn;
-			}
-		}
-
-		[DBus(visible = false)]
-		public Wnck.Screen wnck_screen {
-			get {
-				return this._wnck_screen;
 			}
 		}
 
@@ -55,7 +55,7 @@ namespace ExpidusOSShell {
 			this._settings = new GLib.Settings("com.expidus.shell");
 			this._main_loop = new GLib.MainLoop();
 			this._conn = GLib.Bus.get_sync(BusType.SESSION);
-			this._wnck_screen = Wnck.Screen.get_default();
+			this._notifs = new NotificationsDaemon(this);
 			this.xfconf = new XfconfDaemon(this);
 
 			this._disp = Gdk.Display.get_default();
@@ -76,6 +76,7 @@ namespace ExpidusOSShell {
 			}
 
 			this.dbus_own_id = GLib.Bus.own_name_on_connection(this.conn, "com.expidus.Shell", GLib.BusNameOwnerFlags.NONE);
+			assert(this.dbus_own_id > 0);
 			this.conn.register_object("/com/expidus/shell", this);
 
 			this.monitors = new GLib.List<Monitor>();

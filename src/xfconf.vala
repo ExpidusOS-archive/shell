@@ -140,6 +140,7 @@ namespace ExpidusOSShell {
 			this.shell = shell;
 			this.conn = GLib.Bus.get_sync(GLib.BusType.SESSION);
 			this.dbus_own_id = GLib.Bus.own_name_on_connection(this.conn, "org.xfce.Xfconf", GLib.BusNameOwnerFlags.REPLACE);
+			assert(this.dbus_own_id > 0);
 			this.conn.register_object("/org/xfce/Xfconf", this);
 
 			this.path = GLib.Environment.get_user_config_dir() + "/expidus-shell/xfconf.json";
