@@ -18,9 +18,10 @@ namespace ExpidusOSShell {
 			this.box = new Gtk.Box(Gtk.Orientation.VERTICAL, 0);
 
 			this.list = new Gtk.ListBox();
-			/*this.list.bind_model(new NotificationListModel(shell), (item) => {
-				return new NotificationIcon(item);
-			});*/
+			this.list.bind_model(new NotificationsListModel(shell), (item) => {
+				var notif = item as Notification;
+				return new NotificationIcon(notif, Gtk.IconSize.SMALL_TOOLBAR);
+			});
 			this.box.set_center_widget(this.list);
 
 			this.add(this.box);
@@ -39,6 +40,22 @@ namespace ExpidusOSShell {
 
 		public StatusArea(Shell shell, Desktop desktop) {
 			this._shell = shell;
+			this._desktop = desktop;
+		}
+	}
+
+	public class StatusPanel : SidePanel {
+		private Desktop _desktop;
+
+		public override PanelSide side {
+			get {
+				return this._desktop.monitor.is_mobile ? PanelSide.TOP : PanelSide.RIGHT;
+			}
+		}
+
+		public StatusPanel(Shell shell, Desktop desktop, int monitor_index) {
+			Object(shell: shell, monitor_index: monitor_index, widget_preview: new StatusAreaPreview(shell, desktop), widget_full: new StatusArea(shell, desktop));
+
 			this._desktop = desktop;
 		}
 	}
