@@ -37,7 +37,7 @@ namespace ExpidusOSShell {
 			style_ctx.add_class("expidus-shell-panel-n" + this.monitor_index.to_string());
 
 			this.box = new Gtk.Box(Gtk.Orientation.HORIZONTAL, 0);
-			this.box_left = new Gtk.Box(Gtk.Orientation.HORIZONTAL, 0);
+			this.box_left = new Gtk.Box(Gtk.Orientation.HORIZONTAL, desktop.monitor.is_mobile ? 4 : 0);
 			this.box_center = new Gtk.Box(Gtk.Orientation.HORIZONTAL, 0);
 			this.box_right = new Gtk.Box(Gtk.Orientation.HORIZONTAL, 0);
 
@@ -94,6 +94,21 @@ namespace ExpidusOSShell {
 						desktop.status_panel.mode = SidePanelMode.CLOSED;
 					} else {
 						desktop.status_panel.mode = SidePanelMode.OPEN;
+					}
+				});
+			} else {
+				GLib.HashTable<Notification, NotificationIcon> notifs = new GLib.HashTable<Notification,NotificationIcon>(GLib.direct_hash, GLib.direct_equal);
+
+				this.shell.notifs.notified.connect((notif) => {
+					var w = new NotificationIcon(notif, Gtk.IconSize.SMALL_TOOLBAR);
+					notifs.insert(notif, w);
+					this.box_left.add(w);
+				});
+
+				this.shell.notifs.NotificationClosed.connect((id, reason) => {
+					var notif = shell.notifs.find(id);
+					if (notif != null && notifs.get(notif) != null) {
+						this.box_left.remove(notifs.get(notif));
 					}
 				});
 			}
