@@ -5,9 +5,9 @@ fs = import('fs')
 
 gtk = [dependency('gtk+-3.0'), dependency('gdk-x11-3.0')]
 gio = dependency('gio-2.0')
-json = [dependency('json-glib-1.0')]
-xfce = [dependency('libxfconf-0')]
-extra_deps = [
+deps = [
+	gtk, gio, dependency('libxfconf-0'),
+	dependency('libnm'),
 	meson.get_compiler('c').find_library('m', required: true)
 ]
 
@@ -30,10 +30,10 @@ shell_sources = []
 add_project_arguments('-DXFCONF_G__ERROR=xfconf_get_error_quark()', '-DWNCK_WINDOW_H=1', language: 'c')
 executable('expidus-shell', [shell_res, shell_sources,
 	'src/list-models/notifications.vala',
-	'src/widgets/base-panel.vala', 'src/widgets/desktop.vala', 'src/widgets/notifications.vala', 'src/widgets/panel.vala', 'src/widgets/side-panel.vala', 'src/widgets/startup-window.vala', 'src/widgets/status-area.vala',
+	'src/widgets/base-panel.vala', 'src/widgets/desktop.vala', 'src/widgets/indicators.vala', 'src/widgets/notifications.vala', 'src/widgets/panel.vala', 'src/widgets/side-panel.vala', 'src/widgets/startup-window.vala', 'src/widgets/status-area.vala',
 	'src/main.vala', 'src/monitor.vala', 'src/notifications.vala', 'src/shell.vala', 'src/utils.vala', 'src/xfconf.vala'],
 	install: true,
-	dependencies: [gtk, gio, json, xfce, extra_deps])
+	dependencies: [deps])
 
 # Wallpaper & more
 install_subdir('data/wallpaper',

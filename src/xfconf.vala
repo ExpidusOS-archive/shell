@@ -149,35 +149,11 @@ namespace ExpidusOSShell {
 			if (!GLib.FileUtils.test(GLib.Path.get_dirname(this.path), GLib.FileTest.IS_DIR)) {
 				GLib.DirUtils.create_with_parents(GLib.Path.get_dirname(this.path), 0600);
 			}
-
-			this.read();
-
-			this.PropertyChanged.connect((channel, prop, val) => {
-				this.write();
-			});
-
-			this.PropertyRemoved.connect((channel, prop) => {
-				this.write();
-			});
 		}
 
 		~XfconfDaemon() {
 			GLib.Bus.unown_name(this.dbus_own_id);
 		}
-
-		private void read() throws GLib.Error {
-			var parser = new Json.Parser();
-			if (GLib.FileUtils.test(this.path, GLib.FileTest.IS_REGULAR)) {
-				parser.load_from_file(this.path);
-			}
-
-			for (unowned var item = this.channels.first(); item != null; item = item.next) {
-				var channel = item.data;
-				this.channels.remove(channel);
-			}
-		}
-
-		private void write() {}
 
 		private XfconfChannel? get_channel(string channel_name, bool exists, string caller) {
 			for (unowned var item = this.channels.first(); item != null; item = item.next) {

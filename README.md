@@ -8,7 +8,7 @@ The default desktop environment on ExpidusOS is called ExpidusOS Shell. This rep
 * XFCE 4 Window Manager
 * `gio-2.0`
 * `gtk+-3.0`
-* `json-glib-1.0`
+* `libnm` (NetworkManager library)
 * `libxfconf`
 * valac (host)
 

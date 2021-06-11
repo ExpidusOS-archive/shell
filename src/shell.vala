@@ -15,6 +15,14 @@ namespace ExpidusOSShell {
 		private GLib.List<Monitor> monitors;
 		private GLib.Settings _settings;
 		private NotificationsDaemon _notifs;
+		private NM.Client _nm;
+
+		[DBus(visible = false)]
+		public NM.Client nm {
+			get {
+				return this._nm;
+			}
+		}
 
 		[DBus(visible = false)]
 		public NotificationsDaemon notifs {
@@ -87,6 +95,8 @@ namespace ExpidusOSShell {
 			var provider = new Gtk.CssProvider();
 			provider.load_from_resource("/com/expidus/shell/style.css");
 			Gtk.StyleContext.add_provider_for_screen(screen, provider, Gtk.STYLE_PROVIDER_PRIORITY_APPLICATION);
+
+			this._nm = new NM.Client();
 
 			for (var i = 0; i < this.disp.get_n_monitors(); i++) {
 				this.add_monitor(i);
