@@ -16,6 +16,14 @@ namespace ExpidusOSShell {
 		private GLib.Settings _settings;
 		private NotificationsDaemon _notifs;
 		private NM.Client _nm;
+		private PulseAudio.Context _pulse;
+
+		[DBus(visible = false)]
+		public PulseAudio.Context pulse {
+			get {
+				return this._pulse;
+			}
+		}
 
 		[DBus(visible = false)]
 		public NM.Client nm {
@@ -97,6 +105,8 @@ namespace ExpidusOSShell {
 			Gtk.StyleContext.add_provider_for_screen(screen, provider, Gtk.STYLE_PROVIDER_PRIORITY_APPLICATION);
 
 			this._nm = new NM.Client();
+			this._pulse = new PulseAudio.Context(new PulseAudio.GLibMainLoop(this.main_loop.get_context()).get_api(), null);
+			assert(this._pulse.connect() == 0);
 
 			for (var i = 0; i < this.disp.get_n_monitors(); i++) {
 				this.add_monitor(i);

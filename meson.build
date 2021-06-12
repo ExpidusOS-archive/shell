@@ -7,6 +7,7 @@ gtk = [dependency('gtk+-3.0'), dependency('gdk-x11-3.0')]
 gio = dependency('gio-2.0')
 deps = [
 	gtk, gio, dependency('libxfconf-0'),
+	dependency('libpulse'), dependency('libpulse-mainloop-glib'),
 	dependency('libnm'),
 	meson.get_compiler('c').find_library('m', required: true)
 ]
