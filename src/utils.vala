@@ -10,4 +10,16 @@ namespace ExpidusOSShell.Utils {
 		var dpi = Utils.get_dpi(shell, monitor_index);
 		return (int)(v * (dpi / (150 * shell.settings.get_double("scale-factor"))));
 	}
+
+	public static string audio_icon_name(bool sink_or_source, bool mute, double vol) {
+		string prefix = sink_or_source ? "microphone-sensitivity" : "audio-volume";
+		string level = "";
+
+		if (vol < 0.3) level = "low";
+		else if (vol < 0.8) level = "medium";
+		else level = "high";
+
+		if (mute || vol == 0) return prefix + "-muted";
+		return prefix + "-" + level;
+	}
 }

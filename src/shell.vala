@@ -17,6 +17,7 @@ namespace ExpidusOSShell {
 		private NotificationsDaemon _notifs;
 		private NM.Client _nm;
 		private PulseAudio.Context _pulse;
+		private PulseAudio.GLibMainLoop pulse_loop;
 
 		[DBus(visible = false)]
 		public PulseAudio.Context pulse {
@@ -105,7 +106,38 @@ namespace ExpidusOSShell {
 			Gtk.StyleContext.add_provider_for_screen(screen, provider, Gtk.STYLE_PROVIDER_PRIORITY_APPLICATION);
 
 			this._nm = new NM.Client();
-			this._pulse = new PulseAudio.Context(new PulseAudio.GLibMainLoop(this.main_loop.get_context()).get_api(), null);
+
+			this.pulse_loop = new PulseAudio.GLibMainLoop(this.main_loop.get_context());
+			this._pulse = new PulseAudio.Context(this.pulse_loop.get_api(), null);
+			this._pulse.set_state_callback((c) => {
+				switch (c.get_state()) {
+					case PulseAudio.Context.State.FAILED:
+						stderr.printf("expidus-shell: failed to connect to pulseaudio\n");
+						break;
+					case PulseAudio.Context.State.READY:
+						c.set_subscribe_callback((c, type, i) => {
+							for (unowned var item = this.monitors.first(); item != null; item = item.next) {
+								var monitor = item.data;
+								monitor.desktop.panel.sound.update();
+							}
+						});
+
+						c.subscribe(PulseAudio.Context.SubscriptionMask.SERVER | PulseAudio.Context.SubscriptionMask.CARD | PulseAudio.Context.SubscriptionMask.SINK | PulseAudio.Context.SubscriptionMask.SOURCE, (c, s) => {
+							assert(s == 1);
+						});
+
+						for (unowned var item = this.monitors.first(); item != null; item = item.next) {
+							var monitor = item.data;
+							monitor.desktop.panel.sound.update();
+						}
+						break;
+					case PulseAudio.Context.State.TERMINATED:
+						stderr.printf("expidus-shell: disconnected from pulseaudio\n");
+						break;
+					default:
+						break;
+				}
+			});
 			assert(this._pulse.connect() == 0);
 
 			for (var i = 0; i < this.disp.get_n_monitors(); i++) {

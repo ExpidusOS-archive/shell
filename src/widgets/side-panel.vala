@@ -40,7 +40,7 @@ namespace ExpidusOSShell {
 				this._mode = value;
 
 				var monitor = this.shell.disp.get_monitor(this.monitor_index);
-				var panel_height = Utils.dpi(this.shell, this.monitor_index, 45);
+				var panel_height = Utils.dpi(this.shell, this.monitor_index, 50);
 				var size = 0;
 				switch (this.mode) {
 					case SidePanelMode.CLOSED:

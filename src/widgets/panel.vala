@@ -7,11 +7,20 @@ namespace ExpidusOSShell {
 		private Gtk.Box box_right;
 		private Gtk.Box box;
 
+		private SoundIndicator _sound;
+		private NetworkIndicator net;
+
 		private Gtk.Button clock;
+
+		public SoundIndicator sound {
+			get {
+				return this._sound;
+			}
+		}
 
 		public override Gdk.Rectangle geometry {
 			get {
-				var height = Utils.dpi(this.shell, this.monitor_index, 45);
+				var height = Utils.dpi(this.shell, this.monitor_index, 50);
 				var geo = this.shell.disp.get_monitor(this.monitor_index).geometry;
 				Gdk.Rectangle rect = {
 					x: geo.x,
@@ -113,6 +122,12 @@ namespace ExpidusOSShell {
 				});
 			}
 
+			this.net = new NetworkIndicator(this.shell);
+			this.box_right.add(this.net);
+
+			this._sound = new SoundIndicator(this.shell);
+			this.box_right.add(this.sound);
+
 			this.clock_timer = new GLib.TimeoutSource(1000);
 			this.clock_timer.set_callback(() => {
 				var dt = new GLib.DateTime.now();
@@ -123,6 +138,7 @@ namespace ExpidusOSShell {
 			this.clock_timer.attach(this.shell.main_loop.get_context());
 
 			this.show_all();
+			this.net.update();
 		}
 
 		~Panel() {
