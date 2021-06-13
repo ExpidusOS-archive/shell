@@ -18,6 +18,14 @@ namespace ExpidusOSShell {
 		private NM.Client _nm;
 		private PulseAudio.Context _pulse;
 		private PulseAudio.GLibMainLoop pulse_loop;
+		private Up.Client _upower;
+
+		[DBus(visible = false)]
+		public Up.Client upower {
+			get {
+				return this._upower;
+			}
+		}
 
 		[DBus(visible = false)]
 		public PulseAudio.Context pulse {
@@ -106,6 +114,7 @@ namespace ExpidusOSShell {
 			Gtk.StyleContext.add_provider_for_screen(screen, provider, Gtk.STYLE_PROVIDER_PRIORITY_APPLICATION);
 
 			this._nm = new NM.Client();
+			this._upower = new Up.Client();
 
 			this.pulse_loop = new PulseAudio.GLibMainLoop(this.main_loop.get_context());
 			this._pulse = new PulseAudio.Context(this.pulse_loop.get_api(), null);

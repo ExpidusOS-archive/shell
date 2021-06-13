@@ -11,6 +11,7 @@ The default desktop environment on ExpidusOS is called ExpidusOS Shell. This rep
 * `libnm` (NetworkManager library)
 * `libpulse` + `libpulse-mainloop-glib`
 * `libxfconf`
+* UPower
 * valac (host)
 
 Make sure any dependency listed with the code blocks have their GObject Introspection and/or vapi bindings generated and installed.

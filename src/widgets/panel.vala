@@ -9,6 +9,7 @@ namespace ExpidusOSShell {
 
 		private SoundIndicator _sound;
 		private NetworkIndicator net;
+		private BatteryIndicator battery;
 
 		private Gtk.Button clock;
 
@@ -121,6 +122,9 @@ namespace ExpidusOSShell {
 					}
 				});
 			}
+
+			this.battery = new BatteryIndicator(this.shell);
+			this.box_right.add(this.battery);
 
 			this.net = new NetworkIndicator(this.shell);
 			this.box_right.add(this.net);

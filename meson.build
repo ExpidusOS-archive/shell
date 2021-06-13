@@ -3,12 +3,16 @@ project('expidus-shell', 'vala', 'c', license: 'GPL-3.0-only', version: '0.1.0-p
 gnome = import('gnome')
 fs = import('fs')
 
+vapi_dir = meson.current_source_dir() / 'vapi'
+add_project_arguments(['--vapidir', vapi_dir], language: 'vala')
+
 gtk = [dependency('gtk+-3.0'), dependency('gdk-x11-3.0')]
 gio = dependency('gio-2.0')
 deps = [
 	gtk, gio, dependency('libxfconf-0'),
 	dependency('libpulse'), dependency('libpulse-mainloop-glib'),
 	dependency('libnm'),
+	dependency('upower-glib'),
 	meson.get_compiler('c').find_library('m', required: true)
 ]
 

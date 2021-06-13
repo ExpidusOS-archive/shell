@@ -1,4 +1,79 @@
 namespace ExpidusOSShell {
+	public class BatteryIndicator : Gtk.Bin {
+		private Shell shell;
+		private Gtk.Image icon;
+		private Up.Device dev;
+		private GLib.TimeoutSource timeout;
+
+		public BatteryIndicator(Shell shell) {
+			this.shell = shell;
+			this.icon = new Gtk.Image();
+			this.icon.icon_size = Gtk.IconSize.SMALL_TOOLBAR;
+			this.icon.icon_name = "battery-missing";
+			this.icon.set_no_show_all(false);
+			this.add(this.icon);
+
+			var devices = this.shell.upower.get_devices2();
+			for (var i = 0; i < devices.length; i++) {
+				var dev = devices.get(i);
+        if (dev.kind == Up.DeviceKind.BATTERY) {
+					this.dev = dev;
+					this.icon.show();
+					break;
+				}
+			}
+
+			this.shell.upower.device_added.connect((dev) => {
+				if (this.dev == null && dev.kind == Up.DeviceKind.BATTERY) {
+					this.dev = dev;
+					this.icon.show();
+				}
+			});
+
+			this.shell.upower.device_removed.connect((obj_path) => {
+				if (this.dev != null) {
+					if (!this.dev.is_present) {
+						this.dev = null;
+						this.icon.hide();
+					}
+				}
+			});
+
+			this.timeout = new GLib.TimeoutSource.seconds(15);
+			this.timeout.set_callback(() => {
+				if (this.dev != null) {
+					var per = (this.dev.energy - this.dev.energy_empty) / this.dev.energy_full;
+					var level = "";
+
+					if (per < 0.1) level = "caution";
+					else if (per < 0.3) level = "low";
+					else if (per < 0.95) level = "good";
+					else level = "full";
+
+					var suffix = "";
+					switch (dev.state) {
+						case Up.DeviceState.CHARGING:
+							suffix = "-charging";
+							break;
+						case Up.DeviceState.FULLY_CHARGED:
+							level = "full";
+							break;
+						case Up.DeviceState.EMPTY:
+							level = "empty";
+							break;
+					}
+
+					this.icon.icon_name = "battery-" + level + suffix;
+				}
+				return true;
+			});
+			this.timeout.attach(this.shell.main_loop.get_context());
+		}
+
+		~BatteryIndicator() {
+			this.timeout.destroy();
+		}
+	}
 	public class NetworkIndicator : Gtk.Box {
 		private Shell shell;
 
@@ -25,6 +100,7 @@ namespace ExpidusOSShell {
 			var style_ctx = this.wifi_btn.get_style_context();
 			style_ctx.add_class("expidus-shell-panel-button");
 			this.wifi_icon.icon_name = "network-wireless-acquiring";
+			this.wifi_icon.icon_size = Gtk.IconSize.SMALL_TOOLBAR;
 			this.add(this.wifi_btn);
 
 			this.eth_icon = new Gtk.Image();
@@ -36,6 +112,7 @@ namespace ExpidusOSShell {
 			style_ctx = this.eth_btn.get_style_context();
 			style_ctx.add_class("expidus-shell-panel-button");
 			this.eth_icon.icon_name = "network-wired";
+			this.eth_icon.icon_size = Gtk.IconSize.SMALL_TOOLBAR;
 			this.add(this.eth_btn);
 
 			this.cell_icon = new Gtk.Image();
@@ -46,6 +123,7 @@ namespace ExpidusOSShell {
 
 			style_ctx = this.cell_btn.get_style_context();
 			style_ctx.add_class("expidus-shell-panel-button");
+			this.cell_icon.icon_size = Gtk.IconSize.SMALL_TOOLBAR;
 			this.cell_icon.icon_name = "network-cellular-acquiring";
 			this.add(this.cell_btn);
 
