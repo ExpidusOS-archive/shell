@@ -1,6 +1,7 @@
 namespace ExpidusOSShell {
 	public class Panel : BasePanel {
 		private GLib.TimeoutSource clock_timer;
+		private Desktop desktop;
 
 		private Gtk.Box box_left;
 		private Gtk.Box box_center;
@@ -10,6 +11,8 @@ namespace ExpidusOSShell {
 		private SoundIndicator _sound;
 		private NetworkIndicator net;
 		private BatteryIndicator battery;
+
+		private ExpidusButton expidus_button;
 
 		private Gtk.Button clock;
 
@@ -41,6 +44,7 @@ namespace ExpidusOSShell {
 
 		public Panel(Shell shell, Desktop desktop, int monitor_index) {
 			Object(shell: shell, monitor_index: monitor_index);
+			this.desktop = desktop;
 
 			var style_ctx = this.get_style_context();
 			style_ctx.add_class("expidus-shell-panel");
@@ -67,10 +71,10 @@ namespace ExpidusOSShell {
 					case Gdk.EventType.BUTTON_RELEASE:
 					case Gdk.EventType.TOUCH_END:
 						if (desktop.monitor.is_mobile) {	
-							if (desktop.status_panel.mode == SidePanelMode.OPEN) {
-								desktop.status_panel.mode = SidePanelMode.CLOSED;
+							if (desktop.dashboard_panel.mode == SidePanelMode.OPEN) {
+								desktop.dashboard_panel.mode = SidePanelMode.CLOSED;
 							} else {
-								desktop.status_panel.mode = SidePanelMode.OPEN;
+								desktop.dashboard_panel.mode = SidePanelMode.OPEN;
 							}
 						}
 						return true;
@@ -87,23 +91,45 @@ namespace ExpidusOSShell {
 			this.box_right.pack_end(this.clock, false, false);
 
 			if (!desktop.monitor.is_mobile) {
+				this.expidus_button = new ExpidusButton(shell);
+				this.expidus_button.enter_notify_event.connect((ev) => {
+					desktop.appboard_panel.mode = SidePanelMode.PREVIEW;
+					return false;
+				});
+
+				this.expidus_button.leave_notify_event.connect((ev) => {
+					if (desktop.appboard_panel.mode == SidePanelMode.PREVIEW) {
+						desktop.dashboard_panel.mode = SidePanelMode.CLOSED;
+					}
+					return false;
+				});
+
+				this.expidus_button.action.connect(() => {
+					if (desktop.appboard_panel.mode == SidePanelMode.OPEN) {
+						desktop.appboard_panel.mode = SidePanelMode.CLOSED;
+					} else {
+						desktop.appboard_panel.mode = SidePanelMode.OPEN;
+					}
+				});
+				this.box_left.pack_start(this.expidus_button);
+
 				this.clock.enter_notify_event.connect((ev) => {
-					desktop.status_panel.mode = SidePanelMode.PREVIEW;
+					desktop.dashboard_panel.mode = SidePanelMode.PREVIEW;
 					return false;
 				});
 
 				this.clock.leave_notify_event.connect((ev) => {
-					if (desktop.status_panel.mode == SidePanelMode.PREVIEW) {
-						desktop.status_panel.mode = SidePanelMode.CLOSED;
+					if (desktop.dashboard_panel.mode == SidePanelMode.PREVIEW) {
+						desktop.dashboard_panel.mode = SidePanelMode.CLOSED;
 					}
 					return false;
 				});
 
 				this.clock.clicked.connect(() => {
-					if (desktop.status_panel.mode == SidePanelMode.OPEN) {
-						desktop.status_panel.mode = SidePanelMode.CLOSED;
+					if (desktop.dashboard_panel.mode == SidePanelMode.OPEN) {
+						desktop.dashboard_panel.mode = SidePanelMode.CLOSED;
 					} else {
-						desktop.status_panel.mode = SidePanelMode.OPEN;
+						desktop.dashboard_panel.mode = SidePanelMode.OPEN;
 					}
 				});
 			} else {
@@ -143,6 +169,7 @@ namespace ExpidusOSShell {
 
 			this.show_all();
 			this.net.update();
+			this.battery.update();
 		}
 
 		~Panel() {

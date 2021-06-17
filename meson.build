@@ -12,6 +12,7 @@ deps = [
 	gtk, gio, dependency('libxfconf-0'),
 	dependency('libpulse'), dependency('libpulse-mainloop-glib'),
 	dependency('libnm'),
+	dependency('libwnck-3.0'),
 	dependency('upower-glib'),
 	meson.get_compiler('c').find_library('m', required: true)
 ]
@@ -32,10 +33,10 @@ shell_res = gnome.compile_resources('expidus-shell-resources', 'data/res/shell.g
 
 shell_sources = []
 
-add_project_arguments('-DXFCONF_G__ERROR=xfconf_get_error_quark()', '-DWNCK_WINDOW_H=1', language: 'c')
+add_project_arguments('-DWNCK_I_KNOW_THIS_IS_UNSTABLE=1', '-DXFCONF_G__ERROR=xfconf_get_error_quark()', language: 'c')
 executable('expidus-shell', [shell_res, shell_sources,
 	'src/list-models/notifications.vala',
-	'src/widgets/base-panel.vala', 'src/widgets/desktop.vala', 'src/widgets/indicators.vala', 'src/widgets/notifications.vala', 'src/widgets/panel.vala', 'src/widgets/side-panel.vala', 'src/widgets/startup-window.vala', 'src/widgets/status-area.vala',
+	'src/widgets/appboard.vala', 'src/widgets/base-panel.vala', 'src/widgets/dashboard.vala', 'src/widgets/desktop.vala', 'src/widgets/expidus-button.vala', 'src/widgets/indicators.vala', 'src/widgets/notifications.vala', 'src/widgets/panel.vala', 'src/widgets/side-panel.vala', 'src/widgets/startup-window.vala',
 	'src/main.vala', 'src/monitor.vala', 'src/notifications.vala', 'src/shell.vala', 'src/utils.vala', 'src/xfconf.vala'],
 	install: true,
 	dependencies: [deps])

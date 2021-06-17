@@ -99,7 +99,7 @@ namespace Up {
 		[Version (since = "0.9.0")]
 		public string to_text ();
 		[NoAccessorMethod]
-		[Version (since = "0.9.0")]
+		[Version (since = "1.0")]
 		public uint battery_level { get; set; }
 		[NoAccessorMethod]
 		[Version (since = "0.9.0")]
@@ -136,7 +136,7 @@ namespace Up {
 		public bool is_rechargeable { get; set; }
 		[NoAccessorMethod]
 		[Version (since = "0.9.0")]
-		public uint kind { get; set; }
+		public Up.DeviceKind kind { get; set; }
 		[NoAccessorMethod]
 		[Version (since = "0.9.19")]
 		public double luminosity { get; set; }
@@ -160,10 +160,10 @@ namespace Up {
 		public string serial { owned get; set; }
 		[NoAccessorMethod]
 		[Version (since = "0.9.0")]
-		public uint state { get; set; }
+		public Up.DeviceState state { get; set; }
 		[NoAccessorMethod]
 		[Version (since = "0.9.0")]
-		public uint technology { get; set; }
+		public Up.DeviceTechnology technology { get; set; }
 		[NoAccessorMethod]
 		[Version (since = "0.9.22")]
 		public double temperature { get; set; }

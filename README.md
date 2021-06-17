@@ -10,6 +10,7 @@ The default desktop environment on ExpidusOS is called ExpidusOS Shell. This rep
 * `gtk+-3.0`
 * `libnm` (NetworkManager library)
 * `libpulse` + `libpulse-mainloop-glib`
+* `libwnck-3.0`
 * `libxfconf`
 * UPower
 * valac (host)

@@ -75,6 +75,22 @@ namespace ExpidusOSShell {
 			this.shell.conn.unregister_object(this.dbus_own_id);
 		}
 
+		public void toggle_appboard() throws GLib.Error {
+			if (this.desktop.appboard_panel.mode == SidePanelMode.OPEN) {
+				this.desktop.appboard_panel.mode = SidePanelMode.CLOSED;
+			} else {
+				this.desktop.appboard_panel.mode = SidePanelMode.OPEN;
+			}
+		}
+
+		public void toggle_dashboard() throws GLib.Error {
+			if (this.desktop.dashboard_panel.mode == SidePanelMode.OPEN) {
+				this.desktop.dashboard_panel.mode = SidePanelMode.CLOSED;
+			} else {
+				this.desktop.dashboard_panel.mode = SidePanelMode.OPEN;
+			}
+		}
+
 		public void update() throws GLib.Error {
 			this.desktop.sync();
 		}

@@ -5,7 +5,8 @@ namespace ExpidusOSShell {
 		private Gtk.Grid _grid;
 		private Gdk.Pixbuf? _wallpaper;
 		private Panel _panel;
-		private StatusPanel _status_panel;
+		private DashboardPanel _dashboard_panel;
+		private AppboardPanel _appboard_panel;
 		private Monitor _monitor;
 
 		public Shell shell {
@@ -26,9 +27,15 @@ namespace ExpidusOSShell {
 			}
 		}
 
-		public StatusPanel status_panel {
+		public DashboardPanel dashboard_panel {
 			get {
-				return this._status_panel;
+				return this._dashboard_panel;
+			}
+		}
+
+		public AppboardPanel appboard_panel {
+			get {
+				return this._appboard_panel;
 			}
 		}
 
@@ -53,7 +60,8 @@ namespace ExpidusOSShell {
 			this.skip_pager_hint = true;
 			this.skip_taskbar_hint = true;
 
-			this._status_panel = new StatusPanel(this.shell, this, this._monitor_index);
+			this._dashboard_panel = new DashboardPanel(this.shell, this, this._monitor_index);
+			this._appboard_panel = new AppboardPanel(this.shell, this, this._monitor_index);
 			this._panel = new Panel(this.shell, this, this._monitor_index);
 
 			var style_ctx = this.get_style_context();
@@ -85,7 +93,8 @@ namespace ExpidusOSShell {
 		public void sync() {
 			this.update_size();
 			this.update_wallpaper();
-			this.panel.set_strut();
+			this._panel.unref();
+			this._panel = new Panel(this.shell, this, this._monitor_index);
 		}
 
 		public void update_size() {

@@ -1,5 +1,5 @@
 namespace ExpidusOSShell {
-	public class StatusAreaPreview : Gtk.Bin {
+	public class DashboardPreview : Gtk.Bin {
 		private Shell _shell;
 		private Desktop _desktop;
 		private Gtk.ListBox list;
@@ -11,7 +11,7 @@ namespace ExpidusOSShell {
 			}
 		}
 
-		public StatusAreaPreview(Shell shell, Desktop desktop) {
+		public DashboardPreview(Shell shell, Desktop desktop) {
 			this._shell = shell;
 			this._desktop = desktop;
 
@@ -28,7 +28,7 @@ namespace ExpidusOSShell {
 		}
 	}
 
-	public class StatusArea : Gtk.Box {
+	public class Dashboard : Gtk.Box {
 		private Shell _shell;
 		private Desktop _desktop;
 
@@ -38,13 +38,13 @@ namespace ExpidusOSShell {
 			}
 		}
 
-		public StatusArea(Shell shell, Desktop desktop) {
+		public Dashboard(Shell shell, Desktop desktop) {
 			this._shell = shell;
 			this._desktop = desktop;
 		}
 	}
 
-	public class StatusPanel : SidePanel {
+	public class DashboardPanel : SidePanel {
 		private Desktop _desktop;
 
 		public override PanelSide side {
@@ -53,8 +53,8 @@ namespace ExpidusOSShell {
 			}
 		}
 
-		public StatusPanel(Shell shell, Desktop desktop, int monitor_index) {
-			Object(shell: shell, monitor_index: monitor_index, widget_preview: new StatusAreaPreview(shell, desktop), widget_full: new StatusArea(shell, desktop));
+		public DashboardPanel(Shell shell, Desktop desktop, int monitor_index) {
+			Object(shell: shell, monitor_index: monitor_index, widget_preview: new DashboardPreview(shell, desktop), widget_full: new Dashboard(shell, desktop));
 
 			this._desktop = desktop;
 		}

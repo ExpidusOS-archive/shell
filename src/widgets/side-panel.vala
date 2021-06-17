@@ -103,7 +103,7 @@ namespace ExpidusOSShell {
 				switch (this.side) {
 					case PanelSide.LEFT:
 						geo.x = monitor.geometry.x;
-						geo.y = monitor.geometry.y - panel_height;
+						geo.y = monitor.geometry.y + panel_height;
 						geo.width = size;
 						geo.height = height - panel_height;
 						break;

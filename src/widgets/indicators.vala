@@ -61,6 +61,8 @@ namespace ExpidusOSShell {
 						case Up.DeviceState.EMPTY:
 							level = "empty";
 							break;
+						default:
+							break;
 					}
 
 					this.icon.icon_name = "battery-" + level + suffix;
@@ -68,6 +70,14 @@ namespace ExpidusOSShell {
 				return true;
 			});
 			this.timeout.attach(this.shell.main_loop.get_context());
+		}
+
+		public void update() {	
+			if (this.dev == null) {
+				this.icon.hide();
+			} else {
+				this.icon.show();
+			}
 		}
 
 		~BatteryIndicator() {

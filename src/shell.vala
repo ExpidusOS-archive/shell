@@ -9,6 +9,7 @@ namespace ExpidusOSShell {
 		private uint dbus_own_id;
 		private Pid xfwm_pid;
 		private XfconfDaemon xfconf;
+		private Wnck.Screen _wnck_screen;
 
 		private GLib.MainLoop _main_loop;
 		private Gdk.Display _disp;
@@ -76,6 +77,13 @@ namespace ExpidusOSShell {
 			}
 		}
 
+		[DBus(visible = false)]
+		public Wnck.Screen wnck_screen {
+			get {
+				return this._wnck_screen;
+			}
+		}
+
 		public Shell() throws ShellErrors, GLib.IOError, GLib.SpawnError, GLib.Error {
 			this._settings = new GLib.Settings("com.expidus.shell");
 			this._main_loop = new GLib.MainLoop();
@@ -106,6 +114,7 @@ namespace ExpidusOSShell {
 
 			this.monitors = new GLib.List<Monitor>();
 
+			this._wnck_screen = Wnck.Screen.get_default();
 			var screen = this.disp.get_default_screen();
 			assert(screen != null);
 
@@ -154,6 +163,17 @@ namespace ExpidusOSShell {
 			}
 
 			screen.size_changed.connect(() => {
+				for (unowned var item = this.monitors.first(); item != null; item = item.next) {
+					var monitor = item.data;
+					try {
+						monitor.update();
+					} catch (GLib.Error e) {
+						stderr.printf("expidus-shell: failed to update monitor: (%s) %s\n", e.domain.to_string(), e.message);
+					}
+				}
+			});
+
+			screen.monitors_changed.connect(() => {
 				for (unowned var item = this.monitors.first(); item != null; item = item.next) {
 					var monitor = item.data;
 					try {
