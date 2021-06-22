@@ -104,8 +104,9 @@ namespace ExpidusOSShell {
 		}
 
 		public void update_wallpaper() {
+			var geo = this.shell.disp.get_monitor(this._monitor_index).geometry;
 			try {
-				this._wallpaper = new Gdk.Pixbuf.from_file(this.shell.settings.get_string("wallpaper-path"));
+				this._wallpaper = new Gdk.Pixbuf.from_file_at_size(this.shell.settings.get_string("wallpaper-path"), geo.width, geo.height);
 			} catch (GLib.Error error) {
 				this._wallpaper = null;
 			}
