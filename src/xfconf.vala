@@ -179,14 +179,14 @@ namespace ExpidusOSShell {
 			if (channel == null) throw new Xfconf.Error.INVALIDCHANNEL("Channel " + channel_name + " does not exist");
 			var results = channel.get_all(prop_base);
 			if (channel_name == "xfwm4") {
-				results.set("/generic/theme", new Variant.string("Tokyo-dark"));
+				results.set("/generic/theme", new Variant.string(this.shell.settings.get_string("theme")));
 				results.set("/generic/titleless_maximize", new Variant.boolean(this.shell.settings.get_boolean("frameless-maximize")));
 			}
 			return results;
 		}
 
 		public Variant GetProperty(string channel_name, string prop_name) throws GLib.Error {
-			if (channel_name == "xfwm4" && prop_name == "/general/theme") return new Variant.string("Tokyo-dark");
+			if (channel_name == "xfwm4" && prop_name == "/general/theme") return new Variant.string(this.shell.settings.get_string("theme"));
 			if (channel_name == "xfwm4" && prop_name == "/general/titleless_maximize") return new Variant.boolean(this.shell.settings.get_boolean("frameless-maximize"));
 			var channel = this.get_channel(channel_name, false, "GetProperty");
 			if (channel == null) throw new Xfconf.Error.INVALIDCHANNEL("Channel " + channel_name + " does not exist");

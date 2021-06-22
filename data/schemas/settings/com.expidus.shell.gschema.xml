@@ -1,10 +1,10 @@
 <schemalist>
   <schema path="/com/expidus/shell/" id="com.expidus.shell">
-    <key name="wallpaper-options" enum="org.gnome.desktop.GDesktopBackgroundStyle">
-      <default>'zoom'</default>
-      <summary>Picture Options</summary>
+    <key name="theme" type="s">
+      <default>'Tokyo-dark'</default>
+      <summary>Theme</summary>
       <description>
-        Determines how the wallpaper should be drawn on the desktop.
+				Chooses which GTK + XFWM4 theme to utilize.
       </description>
     </key>
     <key name="wallpaper-path" type="s">

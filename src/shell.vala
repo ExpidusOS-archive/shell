@@ -10,6 +10,7 @@ namespace ExpidusOSShell {
 		private Pid xfwm_pid;
 		private XfconfDaemon xfconf;
 		private Wnck.Screen _wnck_screen;
+		private XSettings xsettings;
 
 		private GLib.MainLoop _main_loop;
 		private Gdk.Display _disp;
@@ -122,6 +123,16 @@ namespace ExpidusOSShell {
 			provider.load_from_resource("/com/expidus/shell/style.css");
 			Gtk.StyleContext.add_provider_for_screen(screen, provider, Gtk.STYLE_PROVIDER_PRIORITY_APPLICATION);
 
+			this.xsettings = new XSettings(this);
+			this.settings.changed["theme"].connect(() => {
+				this.xsettings.set_string("Net/ThemeName", this.settings.get_string("theme"));
+				this.xsettings.update();
+				this.xfconf.PropertyChanged("xfwm4", "/generic/theme", new Variant.string(this.settings.get_string("theme")));
+			});
+
+			this.xsettings.set_string("Net/ThemeName", this.settings.get_string("theme"));
+			this.xsettings.update();
+
 			this._nm = new NM.Client();
 			this._upower = new Up.Client();
 
@@ -210,17 +221,17 @@ namespace ExpidusOSShell {
 				}
 			});
 
-      GLib.TimeoutSource timeout = new GLib.TimeoutSource.seconds(10);
-      timeout.set_callback(() => {
-        timeout.destroy();
-        for (unowned var item = startup_windows.first(); item != null; item = item.next) {
+			GLib.TimeoutSource timeout = new GLib.TimeoutSource.seconds(10);
+			timeout.set_callback(() => {
+				timeout.destroy();
+				for (unowned var item = startup_windows.first(); item != null; item = item.next) {
 					var startup_win = item.data;
 					startup_win.hide();
-          startup_windows.remove(startup_win);
-        }
+					startup_windows.remove(startup_win);
+				}
 				return false;
-      });
-      timeout.attach(this.main_loop.get_context());
+			});
+			timeout.attach(this.main_loop.get_context());
 		}
 
 		~Shell() {
