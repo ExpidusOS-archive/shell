@@ -107,8 +107,21 @@ namespace ExpidusOSShell {
 			this.xsettings = new XSettings(this);
 			this.settings.changed["theme"].connect(() => {
 				this.xsettings.set_string("Net/ThemeName", this.settings.get_string("theme"));
-				this.xsettings.update();
+				try {
+					this.xsettings.update();
+				} catch (GLib.Error e) {
+						stderr.printf("expidus-shell: failed to update xsettings: (%s) %s\n", e.domain.to_string(), e.message);
+				}
 				this.xfconf.PropertyChanged("xfwm4", "/generic/theme", new Variant.string(this.settings.get_string("theme")));
+			});
+
+			this.settings.changed["icon-theme"].connect(() => {
+				this.xsettings.set_string("Net/IconThemeName", this.settings.get_string("icon-theme"));
+				try {
+					this.xsettings.update();
+				} catch (GLib.Error e) {
+						stderr.printf("expidus-shell: failed to update xsettings: (%s) %s\n", e.domain.to_string(), e.message);
+				}
 			});
 
 			List<StartupWindow> startup_windows = new GLib.List<StartupWindow>();

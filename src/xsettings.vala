@@ -4,6 +4,7 @@ namespace ExpidusOSShell {
 		private Shell shell;
 		private int _fd;
 		private Pid pid;
+		private string temp_path;
 
 		public int fd {
 			get {
@@ -15,14 +16,14 @@ namespace ExpidusOSShell {
 			this.shell = shell;
 			this.props = new GLib.HashTable<string, string>(str_hash, str_equal);
 
-			string temp_path;
-			this._fd = GLib.FileUtils.open_tmp("xsettingsd.XXXXXX", out temp_path);
+			this._fd = GLib.FileUtils.open_tmp("xsettingsd.XXXXXX", out this.temp_path);
 			assert(this.fd > 1);
 
 			this.set_string("Net/ThemeName", this.shell.settings.get_string("theme"));
+			this.set_string("Net/IconThemeName", this.shell.settings.get_string("icon-theme"));
 			this.write();
 
-			GLib.Process.spawn_async(null, {"xsettingsd", "--config", temp_path}, GLib.Environ.get(), GLib.SpawnFlags.STDERR_TO_DEV_NULL | GLib.SpawnFlags.STDOUT_TO_DEV_NULL | GLib.SpawnFlags.SEARCH_PATH, null, out this.pid);
+			GLib.Process.spawn_async(null, {"xsettingsd", "--config", this.temp_path}, GLib.Environ.get(), GLib.SpawnFlags.STDERR_TO_DEV_NULL | GLib.SpawnFlags.STDOUT_TO_DEV_NULL | GLib.SpawnFlags.SEARCH_PATH, null, out this.pid);
 			GLib.ChildWatch.add(this.pid, (pid, status) => {
 				GLib.Process.close_pid(pid);
 				GLib.Process.exit(status);
@@ -33,15 +34,14 @@ namespace ExpidusOSShell {
 			GLib.FileUtils.close(this.fd);
 		}
 
-		private void write() {
+		private void write() throws GLib.FileError {
 			var str = "";
 
 			this.props.for_each((k, v) => {
 				str += "%s %s\n".printf(k, v);
 			});
 
-			Posix.lseek(this.fd, 0, Posix.FILE.SEEK_SET);
-			Posix.write(this.fd, str, str.length);
+			GLib.FileUtils.set_contents(this.temp_path, str);
 		}
 
 		private void @set(string name, string raw_value) {
@@ -68,7 +68,7 @@ namespace ExpidusOSShell {
 			this.@set(name, num.to_string());
 		}
 
-		public void update() {
+		public void update() throws GLib.FileError {
 			this.write();
 			Posix.kill(this.pid, Posix.Signal.HUP);
 		}
