@@ -98,11 +98,18 @@ namespace ExpidusOSShell {
 			{
 				string args[] = {"xfwm4", "--replace"};
 				GLib.Process.spawn_async(null, args, GLib.Environ.get(), GLib.SpawnFlags.STDERR_TO_DEV_NULL | GLib.SpawnFlags.STDOUT_TO_DEV_NULL | GLib.SpawnFlags.SEARCH_PATH, null, out this.xfwm_pid);
-				GLib.ChildWatch.add(this.xfwm_pid, (pid, status) => {
+				/*GLib.ChildWatch.add(this.xfwm_pid, (pid, status) => {
 					GLib.Process.close_pid(pid);
 					GLib.Process.exit(status);
-				});
+				});*/
 			}
+
+			this.xsettings = new XSettings(this);
+			this.settings.changed["theme"].connect(() => {
+				this.xsettings.set_string("Net/ThemeName", this.settings.get_string("theme"));
+				this.xsettings.update();
+				this.xfconf.PropertyChanged("xfwm4", "/generic/theme", new Variant.string(this.settings.get_string("theme")));
+			});
 
 			List<StartupWindow> startup_windows = new GLib.List<StartupWindow>();
 			for (var i = 0; i < this.disp.get_n_monitors(); i++) {
@@ -122,16 +129,6 @@ namespace ExpidusOSShell {
 			var provider = new Gtk.CssProvider();
 			provider.load_from_resource("/com/expidus/shell/style.css");
 			Gtk.StyleContext.add_provider_for_screen(screen, provider, Gtk.STYLE_PROVIDER_PRIORITY_APPLICATION);
-
-			this.xsettings = new XSettings(this);
-			this.settings.changed["theme"].connect(() => {
-				this.xsettings.set_string("Net/ThemeName", this.settings.get_string("theme"));
-				this.xsettings.update();
-				this.xfconf.PropertyChanged("xfwm4", "/generic/theme", new Variant.string(this.settings.get_string("theme")));
-			});
-
-			this.xsettings.set_string("Net/ThemeName", this.settings.get_string("theme"));
-			this.xsettings.update();
 
 			this._nm = new NM.Client();
 			this._upower = new Up.Client();
