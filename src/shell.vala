@@ -12,6 +12,8 @@ namespace ExpidusOSShell {
 		private Wnck.Screen _wnck_screen;
 		private XSettings xsettings;
 		private Logind.Client _logind;
+		private Act.UserManager _act;
+		private Act.User? _user;
 
 		private GLib.MainLoop _main_loop;
 		private Gdk.Display _disp;
@@ -22,6 +24,20 @@ namespace ExpidusOSShell {
 		private PulseAudio.Context _pulse;
 		private PulseAudio.GLibMainLoop pulse_loop;
 		private Up.Client _upower;
+
+		[DBus(visible = false)]
+		public Act.User? user {
+			get {
+				return this._user;
+			}
+		}
+
+		[DBus(visible = false)]
+		public Act.UserManager act {
+			get {
+				return this._act;
+			}
+		}
 
 		[DBus(visible = false)]
 		public Logind.Client logind {
@@ -154,6 +170,10 @@ namespace ExpidusOSShell {
 			this._nm = new NM.Client();
 			this._upower = new Up.Client();
 			this._logind = new Logind.Client();
+			this._act = Act.UserManager.get_default();
+
+			unowned var userent = Posix.getpwuid(Posix.getuid());
+			if (userent != null) this._user = this._act.cache_user(userent.pw_name);
 
 			this.pulse_loop = new PulseAudio.GLibMainLoop(this.main_loop.get_context());
 			this._pulse = new PulseAudio.Context(this.pulse_loop.get_api(), null);

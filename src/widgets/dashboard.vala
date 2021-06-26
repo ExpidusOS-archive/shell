@@ -37,6 +37,9 @@ namespace ExpidusOSShell {
 		private Gtk.Box main_box;
 		private Gtk.Box footer_box;
 
+		private Gtk.Image profile_icon;
+		private Gtk.Label profile_label;
+
 		public Shell shell {
 			get {
 				return this._shell;
@@ -52,10 +55,33 @@ namespace ExpidusOSShell {
 			this.main_box = new Gtk.Box(Gtk.Orientation.VERTICAL, 0);
 			this.footer_box = new Gtk.Box(Gtk.Orientation.VERTICAL, 0);
 
+
 			this.box.pack_start(this.header_box);
 			this.box.set_center_widget(this.main_box);
 			this.box.pack_end(this.footer_box);
 			this.add(this.box);
+
+			{
+				if (this.shell.user != null) {
+					var row = new Gtk.Box(Gtk.Orientation.HORIZONTAL, 5);
+
+					if (this.shell.user.icon_file != null) {
+						var size = Utils.dpi(this.shell, desktop.monitor.index, 100);
+						try {
+							this.profile_icon = new Gtk.Image.from_pixbuf(new Gdk.Pixbuf.from_file_at_scale(this.shell.user.icon_file, size, size, true));
+							row.pack_start(this.profile_icon, false, false);
+						} catch (GLib.Error e) {
+							stderr.printf("expidus-shell: failed to load user icon (%s): %s\n", e.domain.to_string(), e.message);
+						}
+					}
+
+					var name = (this.shell.user.real_name != null && this.shell.user.real_name.length > 0) ? this.shell.user.real_name : this.shell.user.get_user_name();
+					this.profile_label = new Gtk.Label(name);
+					row.add(this.profile_label);
+
+					this.header_box.pack_start(row, false, false);
+				}
+			}
 
 			{
 				var power_buttons = new Gtk.ButtonBox(Gtk.Orientation.HORIZONTAL);
@@ -65,11 +91,6 @@ namespace ExpidusOSShell {
 				style.add_class("expidus-shell-panel-button");
 				log_out.clicked.connect(() => this.shell.main_loop.quit());
 				power_buttons.add(log_out);
-
-				var lock_screen = new Gtk.Button.from_icon_name("system-lock-screen");
-				style = lock_screen.get_style_context();
-				style.add_class("expidus-shell-panel-button");
-				power_buttons.add(lock_screen);
 
 				if (this.shell.logind.can_reboot) {
 					var reboot = new Gtk.Button.from_icon_name("system-reboot");

@@ -84,10 +84,12 @@ namespace ExpidusOSShell {
 			this.move(geo.x, geo.y);
 
 			this.shell.settings.changed["wallpaper-path"].connect(this.update_wallpaper);
+			this.shell.settings.changed["mobile-wallpaper-path"].connect(this.update_wallpaper);
 		}
 
 		~Desktop() {
 			this.shell.settings.changed["wallpaper-path"].disconnect(this.update_wallpaper);
+			this.shell.settings.changed["mobile-wallpaper-path"].disconnect(this.update_wallpaper);
 		}
 
 		public void sync() {
@@ -106,7 +108,7 @@ namespace ExpidusOSShell {
 		public void update_wallpaper() {
 			var geo = this.shell.disp.get_monitor(this._monitor_index).geometry;
 			try {
-				this._wallpaper = new Gdk.Pixbuf.from_file_at_size(this.shell.settings.get_string("wallpaper-path"), geo.width, geo.height);
+				this._wallpaper = new Gdk.Pixbuf.from_file_at_size(this.shell.settings.get_string((this.monitor.is_mobile ? "mobile-" : "") + "wallpaper-path"), geo.width, geo.height);
 			} catch (GLib.Error error) {
 				this._wallpaper = null;
 			}

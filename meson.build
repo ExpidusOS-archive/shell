@@ -10,6 +10,8 @@ gtk = [dependency('gtk+-3.0'), dependency('gdk-x11-3.0')]
 gio = dependency('gio-2.0')
 deps = [
 	gtk, gio, dependency('libxfconf-0'),
+	dependency('accountsservice'),
+	dependency('libhandy-1'),
 	dependency('libpulse'), dependency('libpulse-mainloop-glib'),
 	dependency('libnm'),
 	dependency('libwnck-3.0'),

@@ -21,6 +21,13 @@
         The path to use when looking for wallpaper.
       </description>
     </key>
+    <key name="mobile-wallpaper-path" type="s">
+      <default>'/usr/share/backgrounds/expidus/default-mobile.png'</default>
+      <summary>Mobile Wallpaper Path</summary>
+      <description>
+        The path to use when looking for wallpaper to use on mobile displays.
+      </description>
+    </key>
     <key name="favorite-applications" type="as">
       <default>['com.expidus.phone', 'com.expidus.contacts', 'com.expidus.settings']</default>
       <summary>Favorite Applications</summary>
