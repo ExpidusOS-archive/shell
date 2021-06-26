@@ -6,6 +6,7 @@ namespace ExpidusOSShell {
 	}
 
 	public abstract class SidePanel : BasePanel {
+		private Desktop _desktop;
 		private Gtk.Stack stack;
 		private SidePanelMode _mode = SidePanelMode.CLOSED;
 		private Gtk.Widget _widget_preview;
@@ -32,6 +33,15 @@ namespace ExpidusOSShell {
 			}
 		}
 
+		public Desktop desktop {
+			get {
+				return this._desktop;
+			}
+			construct {
+				this._desktop = value;
+			}
+		}
+
 		public SidePanelMode mode {
 			get {
 				return this._mode;
@@ -52,6 +62,8 @@ namespace ExpidusOSShell {
 						size = this.open_size;
 						break;
 				}
+
+				if (this.desktop.monitor.is_mobile) size *= 2;
 
 				switch (this.side) {
 					case PanelSide.LEFT:
@@ -100,6 +112,8 @@ namespace ExpidusOSShell {
 						this.stack.visible_child_name = "full";
 						break;
 				}
+
+				if (this.desktop.monitor.is_mobile) size *= 2;
 
 				switch (this.side) {
 					case PanelSide.LEFT:

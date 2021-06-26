@@ -36,18 +36,14 @@ namespace ExpidusOSShell {
 	}
 
 	public class AppboardPanel : SidePanel {
-		private Desktop _desktop;
-
 		public override PanelSide side {
 			get {
-				return this._desktop.monitor.is_mobile ? PanelSide.BOTTOM : PanelSide.LEFT;
+				return this.desktop.monitor.is_mobile ? PanelSide.BOTTOM : PanelSide.LEFT;
 			}
 		}
 
 		public AppboardPanel(Shell shell, Desktop desktop, int monitor_index) {
-			Object(shell: shell, monitor_index: monitor_index, widget_preview: new AppboardPreview(shell, desktop), widget_full: new Appboard(shell, desktop));
-
-			this._desktop = desktop;
+			Object(shell: shell, desktop: desktop, monitor_index: monitor_index, widget_preview: new AppboardPreview(shell, desktop), widget_full: new Appboard(shell, desktop));
 		}
 	}
 }

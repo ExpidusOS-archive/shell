@@ -13,7 +13,7 @@ namespace ExpidusOSShell {
 		private XSettings xsettings;
 		private Logind.Client _logind;
 		private Act.UserManager _act;
-		private Act.User? _user;
+		private Act.User? _user = null;
 
 		private GLib.MainLoop _main_loop;
 		private Gdk.Display _disp;
@@ -172,8 +172,11 @@ namespace ExpidusOSShell {
 			this._logind = new Logind.Client();
 			this._act = Act.UserManager.get_default();
 
-			unowned var userent = Posix.getpwuid(Posix.getuid());
-			if (userent != null) this._user = this._act.cache_user(userent.pw_name);
+			this._act.list_users().@foreach((user) => {
+				if (user.get_uid() == Posix.getuid() && this._user == null) {
+					this._user = user;
+				}
+			});
 
 			this.pulse_loop = new PulseAudio.GLibMainLoop(this.main_loop.get_context());
 			this._pulse = new PulseAudio.Context(this.pulse_loop.get_api(), null);

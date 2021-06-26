@@ -124,18 +124,14 @@ namespace ExpidusOSShell {
 	}
 
 	public class DashboardPanel : SidePanel {
-		private Desktop _desktop;
-
 		public override PanelSide side {
 			get {
-				return this._desktop.monitor.is_mobile ? PanelSide.TOP : PanelSide.RIGHT;
+				return this.desktop.monitor.is_mobile ? PanelSide.TOP : PanelSide.RIGHT;
 			}
 		}
 
 		public DashboardPanel(Shell shell, Desktop desktop, int monitor_index) {
-			Object(shell: shell, monitor_index: monitor_index, widget_preview: new DashboardPreview(shell, desktop), widget_full: new Dashboard(shell, desktop));
-
-			this._desktop = desktop;
+			Object(shell: shell, desktop: desktop, monitor_index: monitor_index, widget_preview: new DashboardPreview(shell, desktop), widget_full: new Dashboard(shell, desktop));
 		}
 	}
 }
