@@ -11,6 +11,7 @@ namespace ExpidusOSShell {
 		private XfconfDaemon xfconf;
 		private Wnck.Screen _wnck_screen;
 		private XSettings xsettings;
+		private Logind.Client _logind;
 
 		private GLib.MainLoop _main_loop;
 		private Gdk.Display _disp;
@@ -21,6 +22,13 @@ namespace ExpidusOSShell {
 		private PulseAudio.Context _pulse;
 		private PulseAudio.GLibMainLoop pulse_loop;
 		private Up.Client _upower;
+
+		[DBus(visible = false)]
+		public Logind.Client logind {
+			get {
+				return this._logind;
+			}
+		}
 
 		[DBus(visible = false)]
 		public Up.Client upower {
@@ -145,6 +153,7 @@ namespace ExpidusOSShell {
 
 			this._nm = new NM.Client();
 			this._upower = new Up.Client();
+			this._logind = new Logind.Client();
 
 			this.pulse_loop = new PulseAudio.GLibMainLoop(this.main_loop.get_context());
 			this._pulse = new PulseAudio.Context(this.pulse_loop.get_api(), null);

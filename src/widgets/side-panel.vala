@@ -74,6 +74,7 @@ namespace ExpidusOSShell {
 
 				this.queue_resize();
 				this.queue_draw();
+				while (this.shell.main_loop.get_context().pending()) this.shell.main_loop.get_context().iteration(false);
 			}
 		}
 

@@ -26,3 +26,4 @@ Make sure any dependency listed with the code blocks have their GObject Introspe
 
 ExpidusOS Shell installs and builds just like any other meson project, however it requires the Vala compiler. It also needs `xsettingsd` and `xfwm4` in order to start.
 Optionally, it needs the Papirus icon theme and Tokyo theme when using the default settings.
+The shell also requires elogind if not using systemd, this enables the shell to reboot and shutdown.
