@@ -6,6 +6,7 @@ The default desktop environment on ExpidusOS is called ExpidusOS Shell. This rep
 
 ### Dependencies
 * XFCE 4 Window Manager
+* `accountsservice`
 * `gio-2.0`
 * `gtk+-3.0`
 * `libnm` (NetworkManager library)

@@ -81,6 +81,18 @@ namespace ExpidusOSShell {
 
 					this.header_box.pack_start(row, false, false);
 				}
+
+			}
+
+			{
+				var viewport = new Gtk.Viewport(null, null);
+				var list = new Gtk.ListBox();
+				list.bind_model(new NotificationsListModel(this.shell), (item) => {
+					var notif = item as Notification;
+					return new NotificationBox(notif);
+				});
+				viewport.add(list);
+				this.main_box.add(viewport);
 			}
 
 			{
