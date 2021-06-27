@@ -34,11 +34,12 @@ namespace ExpidusOSShell {
 
 		private Gtk.Box box;
 		private Gtk.Box header_box;
-		private Gtk.Box main_box;
 		private Gtk.Box footer_box;
 
 		private Gtk.Image profile_icon;
 		private Gtk.Label profile_label;
+
+		private Gtk.Scale volume_slider;
 
 		public Shell shell {
 			get {
@@ -52,12 +53,9 @@ namespace ExpidusOSShell {
 
 			this.box = new Gtk.Box(Gtk.Orientation.VERTICAL, 0);
 			this.header_box = new Gtk.Box(Gtk.Orientation.VERTICAL, 0);
-			this.main_box = new Gtk.Box(Gtk.Orientation.VERTICAL, 0);
 			this.footer_box = new Gtk.Box(Gtk.Orientation.VERTICAL, 0);
 
-
 			this.box.pack_start(this.header_box);
-			this.box.set_center_widget(this.main_box);
 			this.box.pack_end(this.footer_box);
 			this.add(this.box);
 
@@ -82,6 +80,16 @@ namespace ExpidusOSShell {
 					this.header_box.pack_start(row, false, false);
 				}
 
+				var volume_box = new Gtk.Box(Gtk.Orientation.HORIZONTAL, 2);
+				volume_box.pack_start(new Gtk.Image.from_icon_name("audio-volume-high", Gtk.IconSize.LARGE_TOOLBAR), false, false);
+				this.volume_slider = new Gtk.Scale(Gtk.Orientation.HORIZONTAL, null);
+				this.volume_slider.set_range(0, 100.0);
+				this.volume_slider.draw_value = false;
+				this.volume_slider.value_changed.connect(() => {
+					this.set_volume(this.volume_slider.get_value());
+				});
+				volume_box.pack_end(this.volume_slider);
+				this.header_box.add(volume_box);
 			}
 
 			{
@@ -92,7 +100,7 @@ namespace ExpidusOSShell {
 					return new NotificationBox(notif);
 				});
 				viewport.add(list);
-				this.main_box.add(viewport);
+				this.header_box.add(viewport);
 			}
 
 			{
@@ -133,6 +141,32 @@ namespace ExpidusOSShell {
 				this.footer_box.pack_end(power_buttons, false, false);
 			}
 		}
+
+		private void set_volume(double v) {
+			this.shell.pulse.get_server_info((c, server_info) => {
+				c.get_sink_info_by_name(server_info.default_sink_name, (c, sink_info, eol) => {
+					if (sink_info != null) {
+						PulseAudio.CVolume vol = {};
+						vol.@set(sink_info.volume.channels, (PulseAudio.Volume)((v * PulseAudio.Volume.NORM) / 100));
+						c.set_sink_volume_by_name(sink_info.name, vol, (c, s) => {});
+					}
+				});
+			});
+		}
+
+		public void update() {
+			this.shell.pulse.get_server_info((c, server_info) => {
+				c.get_sink_info_by_name(server_info.default_sink_name, (c, sink_info, eol) => {
+						if (sink_info != null) {
+							var vol = sink_info.volume.avg();
+							if (vol > PulseAudio.Volume.NORM) vol = PulseAudio.Volume.NORM;
+
+							double v = vol * 100.0 / PulseAudio.Volume.NORM;
+							this.volume_slider.set_value(v);
+						}
+				});
+			});
+		}
 	}
 
 	public class DashboardPanel : SidePanel {
@@ -144,6 +178,13 @@ namespace ExpidusOSShell {
 
 		public DashboardPanel(Shell shell, Desktop desktop, int monitor_index) {
 			Object(shell: shell, desktop: desktop, monitor_index: monitor_index, widget_preview: new DashboardPreview(shell, desktop), widget_full: new Dashboard(shell, desktop));
+		}
+
+		public void update() {
+			var dashboard = this.widget_full as Dashboard;
+			assert(dashboard != null);
+
+			dashboard.update();
 		}
 	}
 }

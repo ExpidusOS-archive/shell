@@ -190,6 +190,7 @@ namespace ExpidusOSShell {
 							for (unowned var item = this.monitors.first(); item != null; item = item.next) {
 								var monitor = item.data;
 								monitor.desktop.panel.sound.update();
+								monitor.desktop.dashboard_panel.update();
 							}
 						});
 
@@ -200,6 +201,7 @@ namespace ExpidusOSShell {
 						for (unowned var item = this.monitors.first(); item != null; item = item.next) {
 							var monitor = item.data;
 							monitor.desktop.panel.sound.update();
+							monitor.desktop.dashboard_panel.update();
 						}
 						break;
 					case PulseAudio.Context.State.TERMINATED:
