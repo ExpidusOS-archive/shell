@@ -273,6 +273,7 @@ namespace ExpidusOSShell {
 					startup_win.hide();
 					startup_windows.remove(startup_win);
 				}
+				this.disp.get_default_seat().ungrab();
 				return false;
 			});
 			timeout.attach(this.main_loop.get_context());

@@ -45,9 +45,9 @@ namespace ExpidusOSShell {
 
 			this.get_window().set_cursor(new Gdk.Cursor.for_display(shell.disp, Gdk.CursorType.BLANK_CURSOR));
 			if (monitor.is_primary()) {
-//				var seat = shell.disp.get_default_seat();
-//				if (seat.grab(this.get_window(), Gdk.SeatCapabilities.ALL, false, null, null, null) != Gdk.GrabStatus.SUCCESS) stderr.printf("expidus-shell: failed to grab the display\n");
 				this.get_window().raise();
+				var seat = shell.disp.get_default_seat();
+				if (seat.grab(this.get_window(), seat.get_capabilities(), true, null, null, null) != Gdk.GrabStatus.SUCCESS) stderr.printf("expidus-shell: failed to grab the display\n");
 			}
 
 			spinner.start();
