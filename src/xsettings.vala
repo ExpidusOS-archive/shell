@@ -24,10 +24,10 @@ namespace ExpidusOSShell {
 			this.write();
 
 			GLib.Process.spawn_async(null, {"xsettingsd", "--config", this.temp_path}, GLib.Environ.get(), GLib.SpawnFlags.STDERR_TO_DEV_NULL | GLib.SpawnFlags.STDOUT_TO_DEV_NULL | GLib.SpawnFlags.SEARCH_PATH, null, out this.pid);
-			GLib.ChildWatch.add(this.pid, (pid, status) => {
+			/*GLib.ChildWatch.add(this.pid, (pid, status) => {
 				GLib.Process.close_pid(pid);
 				GLib.Process.exit(status);
-			});
+			});*/
 		}
 
 		~XSettings() {
