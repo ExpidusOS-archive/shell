@@ -18,6 +18,7 @@ public static int main(string[] args) {
 	try {
 		var shell = new ExpidusOSShell.Shell();
 		shell.main_loop.run();
+		shell.unref();
 		return 0;
 	} catch (GLib.Error e) {
 		stderr.printf("%s: ran into an exception: (%s) %s\n", GLib.Path.get_basename(args[0]), e.domain.to_string(), e.message);

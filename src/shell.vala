@@ -4,10 +4,10 @@ namespace ExpidusOSShell {
 	}
 
 	[DBus(name = "com.expidus.Shell")]
-	public class Shell {
+	public class Shell : GLib.Object {
 		private DBusConnection _conn;
 		private uint dbus_own_id;
-		private Pid xfwm_pid;
+		private GLib.Subprocess xfwm;
 		private XfconfDaemon xfconf;
 		private Wnck.Screen _wnck_screen;
 		private XSettings xsettings;
@@ -24,6 +24,14 @@ namespace ExpidusOSShell {
 		private PulseAudio.Context _pulse;
 		private PulseAudio.GLibMainLoop pulse_loop;
 		private Up.Client _upower;
+		private GLib.SubprocessLauncher _internal_launcher;
+
+		[DBus(visible = false)]
+		public GLib.SubprocessLauncher internal_launcher {
+			get {
+				return this._internal_launcher;
+			}
+		}
 
 		[DBus(visible = false)]
 		public Act.User? user {
@@ -110,6 +118,8 @@ namespace ExpidusOSShell {
 		}
 
 		public Shell() throws ShellErrors, GLib.IOError, GLib.SpawnError, GLib.Error {
+			Object();
+
 			this._settings = new GLib.Settings("com.expidus.shell");
 			this._main_loop = new GLib.MainLoop();
 			this._conn = GLib.Bus.get_sync(BusType.SESSION);
@@ -119,14 +129,8 @@ namespace ExpidusOSShell {
 			this._disp = Gdk.Display.get_default();
 			assert(this.disp != null);
 
-			{
-				string args[] = {"xfwm4", "--replace"};
-				GLib.Process.spawn_async(null, args, GLib.Environ.get(), GLib.SpawnFlags.STDERR_TO_DEV_NULL | GLib.SpawnFlags.STDOUT_TO_DEV_NULL | GLib.SpawnFlags.SEARCH_PATH, null, out this.xfwm_pid);
-				/*GLib.ChildWatch.add(this.xfwm_pid, (pid, status) => {
-					GLib.Process.close_pid(pid);
-					GLib.Process.exit(status);
-				});*/
-			}
+			this._internal_launcher = new GLib.SubprocessLauncher(GLib.SubprocessFlags.STDERR_SILENCE | GLib.SubprocessFlags.STDOUT_SILENCE);
+			this.xfwm = this.internal_launcher.spawnv({"xfwm4"});
 
 			this.xsettings = new XSettings(this);
 			this.settings.changed["theme"].connect(() => {
@@ -281,6 +285,8 @@ namespace ExpidusOSShell {
 
 		~Shell() {
 			GLib.Bus.unown_name(this.dbus_own_id);
+
+			this.xfwm.force_exit();
 		}
 
 		public signal void monitor_added(int i, GLib.ObjectPath path);

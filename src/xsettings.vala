@@ -3,7 +3,7 @@ namespace ExpidusOSShell {
 		private GLib.HashTable<string, string> props;
 		private Shell shell;
 		private int _fd;
-		private Pid pid;
+		private GLib.Subprocess proc;
 		private string temp_path;
 
 		public int fd {
@@ -23,14 +23,11 @@ namespace ExpidusOSShell {
 			this.set_string("Net/IconThemeName", this.shell.settings.get_string("icon-theme"));
 			this.write();
 
-			GLib.Process.spawn_async(null, {"xsettingsd", "--config", this.temp_path}, GLib.Environ.get(), GLib.SpawnFlags.STDERR_TO_DEV_NULL | GLib.SpawnFlags.STDOUT_TO_DEV_NULL | GLib.SpawnFlags.SEARCH_PATH, null, out this.pid);
-			/*GLib.ChildWatch.add(this.pid, (pid, status) => {
-				GLib.Process.close_pid(pid);
-				GLib.Process.exit(status);
-			});*/
+			this.proc = this.shell.internal_launcher.spawnv({"xsettingsd", "--config", this.temp_path});
 		}
 
 		~XSettings() {
+			this.proc.force_exit();
 			GLib.FileUtils.close(this.fd);
 		}
 
@@ -70,7 +67,7 @@ namespace ExpidusOSShell {
 
 		public void update() throws GLib.FileError {
 			this.write();
-			Posix.kill(this.pid, Posix.Signal.HUP);
+			this.proc.send_signal(Posix.Signal.HUP);
 		}
 	}
 }
