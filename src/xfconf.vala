@@ -1,5 +1,66 @@
 namespace ExpidusOSShell {
-	private class XfconfProperty {
+	private interface XfconfPropertyBase : GLib.Object {
+		public abstract string get_name();
+		public abstract bool is_locked();
+		public abstract void set_value(Variant val) throws Xfconf.Error;
+		public abstract Variant get_value();
+		public signal void value_changed();
+	}
+	private class XfconfPropertyBinder : GLib.Object, XfconfPropertyBase {
+		private string prop_name;
+		private string name;
+		private bool locked;
+		private Shell shell;
+
+		public XfconfPropertyBinder(Shell shell, string name, bool locked = false) {
+			this.shell = shell;
+			this.prop_name = name;
+			this.name = name;
+			this.locked = locked;
+			this.init();
+		}
+
+		public XfconfPropertyBinder.with_different_names(Shell shell, string prop_name, string name, bool locked = false) {
+			this.shell = shell;
+			this.prop_name = name;
+			this.name = name;
+			this.locked = locked;
+			this.init();
+		}
+
+		~XfconfPropertyBinder() {
+			this.shell.settings.changed[this.prop_name].disconnect(this.on_changed);
+		}
+
+		private void on_changed() {
+			this.value_changed();
+		}
+
+		private void init() {
+			this.shell.settings.changed[this.prop_name].connect(this.on_changed);
+		}
+
+		public string get_name() {
+			return this.name;
+		}
+
+		public bool is_locked() {
+			return this.locked;
+		}
+
+		public void set_value(Variant val) throws Xfconf.Error {
+			if (this.locked) {
+				throw new Xfconf.Error.PERMISSIONDENIED("Property " + this.name + " is locked and cannot be changed.");
+			} else {
+				this.shell.settings.set_value(this.prop_name, val);
+			}
+		}
+
+		public Variant get_value() {
+			return this.shell.settings.get_value(this.prop_name);
+		}
+	}
+	private class XfconfProperty : GLib.Object, XfconfPropertyBase {
 		private Variant _value;
 		private string _name;
 
@@ -9,7 +70,11 @@ namespace ExpidusOSShell {
 			}
 		}
 
-		public bool locked = false;
+		public bool locked {
+			get {
+				return false;
+			}
+		}
 
 		public Variant value {
 			get {
@@ -31,11 +96,21 @@ namespace ExpidusOSShell {
 			}
 		}
 
-		public signal void value_changed();
+		public string get_name() {
+			return this._name;
+		}
+
+		public bool is_locked() {
+			return this.locked;
+		}
+
+		public Variant get_value() {
+			return this._value;
+		}
 	}
 
 	private class XfconfChannel {
-		private GLib.List<XfconfProperty> props;
+		public GLib.List<XfconfPropertyBase> props;
 		private string _name;
 
 		public string name {
@@ -46,13 +121,13 @@ namespace ExpidusOSShell {
 
 		public XfconfChannel(string channel_name) {
 			this._name = channel_name;
-			this.props = new GLib.List<XfconfProperty>();
+			this.props = new GLib.List<XfconfPropertyBase>();
 		}
 
-		private XfconfProperty? get_property(string name, Variant? val, string cmd) {
+		private XfconfPropertyBase? get_property(string name, Variant? val, string cmd) {
 			for (unowned var item = this.props.first(); item != null; item = item.next) {
 				var prop = item.data;
-				if (prop.name == name) {
+				if (prop.get_name() == name) {
 					return prop;
 				}
 			}
@@ -74,14 +149,14 @@ namespace ExpidusOSShell {
 		public bool is_property_locked(string prop_name) throws Xfconf.Error {
 			var prop = this.get_property(prop_name, null, "is_property_locked");
 			if (prop == null) throw new Xfconf.Error.INVALIDPROPERTY("Invalid property " + prop_name);
-			return prop.locked;
+			return prop.is_locked();
 		}
 
 		public void reset(string prop_name, bool recursive) {
 			if (recursive) {
 				for (unowned var item = this.props.first(); item != null; item = item.next) {
 					var prop = item.data;
-					if (prop.name.contains(prop_name)) {
+					if (prop.get_name().contains(prop_name)) {
 						this.props.remove(prop);
 						this.prop_removed(prop_name);
 					}
@@ -89,7 +164,7 @@ namespace ExpidusOSShell {
 			} else {
 				for (unowned var item = this.props.first(); item != null; item = item.next) {
 					var prop = item.data;
-					if (prop.name == prop_name) {
+					if (prop.get_name() == prop_name) {
 						this.props.remove(prop);
 						this.prop_removed(prop_name);
 					}
@@ -105,7 +180,7 @@ namespace ExpidusOSShell {
 		public Variant get_prop(string prop_name) throws Xfconf.Error {
 			var prop = this.get_property(prop_name, null, "get_prop");
 			if (prop == null) throw new Xfconf.Error.INVALIDPROPERTY("Property " + prop_name + " does not exist");
-			return prop.value;
+			return prop.get_value();
 		}
 
 		public GLib.HashTable<string, Variant> get_all(string prop_base) {
@@ -113,11 +188,11 @@ namespace ExpidusOSShell {
 			for (unowned var item = this.props.first(); item != null; item = item.next) {
 				var prop = item.data;
 				if (prop_base.length > 0) {
-					if (prop.name.substring(0, prop_base.length) == prop.name) {
-						table.insert(prop.name, prop.value);
+					if (prop.get_name().substring(0, prop_base.length) == prop.get_name()) {
+						table.insert(prop.get_name(), prop.get_value());
 					}
 				} else {
-					table.insert(prop.name, prop.value);
+					table.insert(prop.get_name(), prop.get_value());
 				}
 			}
 			return table;
@@ -149,13 +224,20 @@ namespace ExpidusOSShell {
 			if (!GLib.FileUtils.test(GLib.Path.get_dirname(this.path), GLib.FileTest.IS_DIR)) {
 				GLib.DirUtils.create_with_parents(GLib.Path.get_dirname(this.path), 0600);
 			}
+
+			{
+				var channel = this.get_channel("xfwm4", false);
+				assert(channel != null);
+				channel.props.append(new XfconfPropertyBinder.with_different_names(this.shell, "/generic/theme", "theme", true));
+				channel.props.append(new XfconfPropertyBinder.with_different_names(this.shell, "/generic/titleless_maximize", "frameless-maximize", true));
+			}
 		}
 
 		~XfconfDaemon() {
 			GLib.Bus.unown_name(this.dbus_own_id);
 		}
 
-		private XfconfChannel? get_channel(string channel_name, bool exists, string caller) {
+		private XfconfChannel? get_channel(string channel_name, bool exists) {
 			for (unowned var item = this.channels.first(); item != null; item = item.next) {
 				var channel = item.data;
 				if (channel.name == channel_name) return channel;
@@ -175,38 +257,25 @@ namespace ExpidusOSShell {
 		}
 
 		public GLib.HashTable<string, Variant> GetAllProperties(string channel_name, string prop_base) throws GLib.Error {
-			var channel = this.get_channel(channel_name, true, "GetAllProperties");
+			var channel = this.get_channel(channel_name, true);
 			if (channel == null) throw new Xfconf.Error.INVALIDCHANNEL("Channel " + channel_name + " does not exist");
-			var results = channel.get_all(prop_base);
-			if (channel_name == "xfwm4") {
-				results.set("/generic/theme", new Variant.string(this.shell.settings.get_string("theme")));
-				results.set("/generic/titleless_maximize", new Variant.boolean(this.shell.settings.get_boolean("frameless-maximize")));
-			}
-			return results;
+			return channel.get_all(prop_base);
 		}
 
 		public Variant GetProperty(string channel_name, string prop_name) throws GLib.Error {
-			if (channel_name == "xfwm4" && prop_name == "/general/theme") return new Variant.string(this.shell.settings.get_string("theme"));
-			if (channel_name == "xfwm4" && prop_name == "/general/titleless_maximize") return new Variant.boolean(this.shell.settings.get_boolean("frameless-maximize"));
-			var channel = this.get_channel(channel_name, false, "GetProperty");
+			var channel = this.get_channel(channel_name, false);
 			if (channel == null) throw new Xfconf.Error.INVALIDCHANNEL("Channel " + channel_name + " does not exist");
 			return channel.get_prop(prop_name);
 		}
 
 		public bool PropertyExists(string channel_name, string prop_name) throws GLib.Error {
-			if (channel_name == "xfwm4" && prop_name == "/general/theme") return true;
-			if (channel_name == "xfwm4" && prop_name == "/generic/titleless_maximize") return true;
-
-			var channel = this.get_channel(channel_name, true, "PropertyExists");
+			var channel = this.get_channel(channel_name, true);
 			if (channel == null) return false;
 			return channel.prop_exists(prop_name);
 		}
 
 		public bool IsPropertyLocked(string channel_name, string prop_name) throws GLib.Error {
-			if (channel_name == "xfwm4" && prop_name == "/general/theme") return true;
-			if (channel_name == "xfwm4" && prop_name == "/generic/titleless_maximize") return true;
-
-			var channel = this.get_channel(channel_name, true, "IsPropertyLocked");
+			var channel = this.get_channel(channel_name, true);
 			if (channel == null) throw new Xfconf.Error.INVALIDCHANNEL("Channel " + channel_name + " does not exist");
 			return channel.is_property_locked(prop_name);
 		}
@@ -222,16 +291,13 @@ namespace ExpidusOSShell {
 		}
 
 		public void ResetProperty(string channel_name, string prop_name, bool recursive) throws GLib.Error {
-			var channel = this.get_channel(channel_name, true, "ResetProperty");
+			var channel = this.get_channel(channel_name, true);
 			if (channel == null) throw new Xfconf.Error.INVALIDCHANNEL("Channel " + channel_name + " does not exist");
 			channel.reset(prop_name, recursive);
 		}
 
 		public void SetProperty(string channel_name, string prop_name, Variant val) throws GLib.Error {
-			if (channel_name == "xfwm4" && prop_name == "/general/theme") throw new Xfconf.Error.PERMISSIONDENIED("Property is locked");
-			if (channel_name == "xfwm4" && prop_name == "/generic/titleless_maximize") throw new Xfconf.Error.PERMISSIONDENIED("Property is locked");
-
-			var channel = this.get_channel(channel_name, false, "SetProperty");
+			var channel = this.get_channel(channel_name, false);
 			channel.set_prop(prop_name, val);
 		}
 
