@@ -7,8 +7,7 @@ namespace ExpidusOSShell.Utils {
 	}
 
 	public static int dpi(ExpidusOSShell.Shell shell, int monitor_index, int v) {
-		var dpi = Utils.get_dpi(shell, monitor_index);
-		return (int)(v * (dpi / (150 * shell.settings.get_double("scale-factor"))));
+		return (int)((v * get_dpi(shell, monitor_index) / 96) * shell.settings.get_double("scale-factor"));
 	}
 
 	public static string audio_icon_name(bool sink_or_source, bool mute, double vol) {
